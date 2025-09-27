@@ -40,6 +40,41 @@
             <artifactId>flatlaf-extras</artifactId>
             <version>3.2.5</version>
         </dependency>
+        
+        <!-- FlatLaf IntelliJ Themes -->
+        <dependency>
+            <groupId>com.formdev</groupId>
+            <artifactId>flatlaf-intellij-themes</artifactId>
+            <version>3.2.5</version>
+        </dependency>
+        
+        <!-- MigLayout for better layouts -->
+        <dependency>
+            <groupId>com.miglayout</groupId>
+            <artifactId>miglayout-swing</artifactId>
+            <version>11.1</version>
+        </dependency>
+        
+        <!-- Trident for animations - using simple Swing animations instead -->
+        <!-- <dependency>
+            <groupId>org.pushing-pixels</groupId>
+            <artifactId>trident</artifactId>
+            <version>1.5.0</version>
+        </dependency> -->
+        
+        <!-- JFreeChart for charts and dashboards -->
+        <dependency>
+            <groupId>org.jfree</groupId>
+            <artifactId>jfreechart</artifactId>
+            <version>1.5.3</version>
+        </dependency>
+        
+        <!-- JCommon for JFreeChart -->
+        <dependency>
+            <groupId>org.jfree</groupId>
+            <artifactId>jcommon</artifactId>
+            <version>1.0.24</version>
+        </dependency>
 
         <!-- JUnit for testing -->
         <dependency>

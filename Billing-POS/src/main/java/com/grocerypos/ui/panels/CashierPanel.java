@@ -26,6 +26,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import com.grocerypos.ui.components.ToastNotification;
+import com.grocerypos.ui.components.LoadingSpinner;
 
 /**
  * Cashier panel for POS operations
@@ -51,6 +54,8 @@ public class CashierPanel extends JPanel {
     private JButton quickAddButton;
     private JButton discountButton;
     private JTextField discountField;
+    private JComboBox<String> searchComboBox;
+    private List<Item> allItems;
     
     private List<BillItem> cartItems;
     private BigDecimal subtotal;
@@ -96,10 +101,20 @@ public class CashierPanel extends JPanel {
             BorderFactory.createEmptyBorder(12, 15, 12, 15)
         ));
         
-        // Search field
+        // Search field with autocomplete
+        searchComboBox = new JComboBox<>();
+        searchComboBox.setEditable(true);
+        searchComboBox.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
+        searchComboBox.setToolTipText("Search items by name (F1 to focus)");
+        searchComboBox.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(107, 114, 128), 2),
+            BorderFactory.createEmptyBorder(10, 12, 10, 12)
+        ));
+        
+        // Keep the original searchField for compatibility
         searchField = new JTextField(20);
         searchField.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
-        searchField.setToolTipText("Search items by name");
+        searchField.setToolTipText("Search items by name (F1 to focus)");
         searchField.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(new Color(107, 114, 128), 2),
             BorderFactory.createEmptyBorder(10, 12, 10, 12)
@@ -251,7 +266,7 @@ public class CashierPanel extends JPanel {
         JPanel searchRowPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
         searchRowPanel.setBackground(Color.WHITE);
         searchRowPanel.add(new JLabel("🔍 Search:"));
-        searchRowPanel.add(searchField);
+        searchRowPanel.add(searchComboBox);
         searchRowPanel.add(addItemButton);
         searchRowPanel.add(quickAddButton);
         
@@ -348,6 +363,12 @@ public class CashierPanel extends JPanel {
             }
         });
         
+        // Search combo box autocomplete
+        setupAutocomplete();
+        
+        // Keyboard shortcuts
+        setupKeyboardShortcuts();
+        
         // Add item button
         addItemButton.addActionListener(e -> addItemByBarcode());
         
@@ -431,7 +452,8 @@ public class CashierPanel extends JPanel {
     }
 
     private void searchItems() {
-        String searchTerm = searchField.getText().trim();
+        String searchTerm = searchComboBox.getSelectedItem() != null ? 
+            searchComboBox.getSelectedItem().toString().trim() : "";
         if (searchTerm.isEmpty()) {
             searchModel.setRowCount(0);
             return;
@@ -453,8 +475,9 @@ public class CashierPanel extends JPanel {
             }
             
             parent.setStatus("Found " + items.size() + " items matching '" + searchTerm + "'");
+            ToastNotification.showInfo(SwingUtilities.getWindowAncestor(this), "Found " + items.size() + " items matching '" + searchTerm + "'");
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Database error: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            ToastNotification.showError(SwingUtilities.getWindowAncestor(this), "Database error: " + e.getMessage());
             parent.setStatus("Database error: " + e.getMessage());
         }
     }
@@ -842,5 +865,106 @@ public class CashierPanel extends JPanel {
             
             printerJob.print();
         }
+    }
+    
+    private void setupAutocomplete() {
+        try {
+            if (itemDAO != null) {
+                allItems = itemDAO.findAll();
+                updateSearchComboBox();
+            } else {
+                allItems = new ArrayList<>();
+            }
+        } catch (SQLException e) {
+            ToastNotification.showError(SwingUtilities.getWindowAncestor(this), "Error loading items for search: " + e.getMessage());
+        }
+        
+        // Add key listener for autocomplete
+        JTextField editor = (JTextField) searchComboBox.getEditor().getEditorComponent();
+        editor.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                String text = editor.getText().toLowerCase();
+                if (text.length() > 0) {
+                    List<String> matches = allItems.stream()
+                        .filter(item -> item.getName().toLowerCase().contains(text))
+                        .map(Item::getName)
+                        .limit(10)
+                        .collect(Collectors.toList());
+                    
+                    searchComboBox.removeAllItems();
+                    for (String match : matches) {
+                        searchComboBox.addItem(match);
+                    }
+                    searchComboBox.showPopup();
+                }
+            }
+            
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    searchItems();
+                }
+            }
+        });
+        
+        // Add action listener for selection
+        searchComboBox.addActionListener(e -> {
+            if (searchComboBox.getSelectedItem() != null) {
+                searchItems();
+            }
+        });
+    }
+    
+    private void updateSearchComboBox() {
+        searchComboBox.removeAllItems();
+        for (Item item : allItems) {
+            searchComboBox.addItem(item.getName());
+        }
+    }
+    
+    private void setupKeyboardShortcuts() {
+        // F1 - Focus search
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("F1"), "focusSearch");
+        getActionMap().put("focusSearch", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                searchComboBox.requestFocus();
+                searchComboBox.showPopup();
+            }
+        });
+        
+        // F5 - Checkout
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("F5"), "checkout");
+        getActionMap().put("checkout", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (checkoutButton.isEnabled()) {
+                    processCheckout();
+                }
+            }
+        });
+        
+        // F6 - Clear cart
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("F6"), "clearCart");
+        getActionMap().put("clearCart", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (clearCartButton.isEnabled()) {
+                    clearCart();
+                }
+            }
+        });
+        
+        // F7 - Print receipt
+        getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("F7"), "printReceipt");
+        getActionMap().put("printReceipt", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (printReceiptButton.isEnabled()) {
+                    printReceipt();
+                }
+            }
+        });
     }
 }

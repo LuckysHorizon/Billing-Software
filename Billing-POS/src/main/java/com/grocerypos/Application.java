@@ -3,7 +3,9 @@ package com.grocerypos;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.grocerypos.database.DBUtil;
 import com.grocerypos.ui.panels.*;
+import com.grocerypos.ui.components.ToastNotification;
 import com.grocerypos.util.SessionManager;
+import com.grocerypos.util.ThemeManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -25,14 +27,17 @@ public class Application extends JFrame {
     private AdminPanel adminPanel;
     private CashierPanel cashierPanel;
     private ReportsPanel reportsPanel;
+    private DashboardPanel dashboardPanel;
     private SettingsPanel settingsPanel;
     
     // Navigation buttons
+    private JButton dashboardButton;
     private JButton adminButton;
     private JButton cashierButton;
     private JButton reportsButton;
     private JButton settingsButton;
     private JButton logoutButton;
+    private JButton themeButton;
 
     public Application() {
         initializeApplication();
@@ -74,10 +79,12 @@ public class Application extends JFrame {
         adminPanel = new AdminPanel(this);
         cashierPanel = new CashierPanel(this);
         reportsPanel = new ReportsPanel(this);
+        dashboardPanel = new DashboardPanel(this);
         settingsPanel = new SettingsPanel(this);
         
         // Add panels to main panel
         mainPanel.add(loginPanel, "LOGIN");
+        mainPanel.add(dashboardPanel, "DASHBOARD");
         mainPanel.add(adminPanel, "ADMIN");
         mainPanel.add(cashierPanel, "CASHIER");
         mainPanel.add(reportsPanel, "REPORTS");
@@ -118,13 +125,17 @@ public class Application extends JFrame {
         navPanel.setBackground(new Color(45, 55, 72));
         
         // Create navigation buttons
+        dashboardButton = createNavButton("Dashboard", "📊");
         adminButton = createNavButton("Admin Panel", "👨‍💼");
         cashierButton = createNavButton("Cashier Panel", "🛒");
-        reportsButton = createNavButton("Reports", "📊");
+        reportsButton = createNavButton("Reports", "📈");
         settingsButton = createNavButton("Settings", "⚙️");
+        themeButton = createNavButton("Theme", "🎨");
         logoutButton = createNavButton("Logout", "🚪");
         
         // Add buttons to navigation panel
+        navPanel.add(dashboardButton);
+        navPanel.add(Box.createVerticalStrut(10));
         navPanel.add(adminButton);
         navPanel.add(Box.createVerticalStrut(10));
         navPanel.add(cashierButton);
@@ -132,6 +143,8 @@ public class Application extends JFrame {
         navPanel.add(reportsButton);
         navPanel.add(Box.createVerticalStrut(10));
         navPanel.add(settingsButton);
+        navPanel.add(Box.createVerticalStrut(10));
+        navPanel.add(themeButton);
         navPanel.add(Box.createVerticalStrut(20));
         navPanel.add(logoutButton);
         
@@ -197,10 +210,12 @@ public class Application extends JFrame {
     }
 
     private void setupEventHandlers() {
+        dashboardButton.addActionListener(e -> showDashboardPanel());
         adminButton.addActionListener(e -> showAdminPanel());
         cashierButton.addActionListener(e -> showCashierPanel());
         reportsButton.addActionListener(e -> showReportsPanel());
         settingsButton.addActionListener(e -> showSettingsPanel());
+        themeButton.addActionListener(e -> showThemeDialog());
         logoutButton.addActionListener(e -> logout());
     }
 
@@ -208,6 +223,12 @@ public class Application extends JFrame {
         cardLayout.show(mainPanel, "LOGIN");
         sidebarPanel.setVisible(false);
         setTitle("Grocery POS System - Login");
+    }
+    
+    public void showDashboardPanel() {
+        cardLayout.show(mainPanel, "DASHBOARD");
+        dashboardPanel.refreshData();
+        setTitle("Grocery POS System - Dashboard");
     }
 
     public void showAdminPanel() {
@@ -240,7 +261,8 @@ public class Application extends JFrame {
     public void loginSuccessful() {
         sidebarPanel.setVisible(true);
         userLabel.setText("Welcome, " + SessionManager.getCurrentUserName());
-        showCashierPanel(); // Default to cashier panel after login
+        showDashboardPanel(); // Default to dashboard after login
+        ToastNotification.showSuccess(this, "Login successful! Welcome to Grocery POS");
     }
 
     public void logout() {
@@ -263,14 +285,34 @@ public class Application extends JFrame {
             statusLabel.setText(status);
         }
     }
+    
+    private void showThemeDialog() {
+        ThemeManager.Theme[] themes = ThemeManager.getAllThemes();
+        String[] themeNames = new String[themes.length];
+        for (int i = 0; i < themes.length; i++) {
+            themeNames[i] = themes[i].getDisplayName();
+        }
+        
+        String selectedTheme = (String) JOptionPane.showInputDialog(
+            this,
+            "Choose a theme:",
+            "Theme Selection",
+            JOptionPane.QUESTION_MESSAGE,
+            null,
+            themeNames,
+            ThemeManager.getCurrentTheme().getDisplayName()
+        );
+        
+        if (selectedTheme != null) {
+            ThemeManager.Theme theme = ThemeManager.getThemeByName(selectedTheme);
+            ThemeManager.applyTheme(theme);
+            ToastNotification.showInfo(this, "Theme changed to " + selectedTheme);
+        }
+    }
 
     public static void main(String[] args) {
-        // Set look and feel
-        try {
-            UIManager.setLookAndFeel(new FlatLightLaf());
-        } catch (Exception e) {
-            System.err.println("Failed to set FlatLaf theme: " + e.getMessage());
-        }
+        // Initialize theme manager
+        ThemeManager.initialize();
 
         // Set application properties
         System.setProperty("apple.laf.useScreenMenuBar", "true");
