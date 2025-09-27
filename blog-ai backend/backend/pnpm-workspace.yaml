@@ -1,8 +1,0 @@
-ignoredBuiltDependencies:
-  - '@prisma/engines'
-  - '@swc/core'
-  - esbuild
-  - prisma
-
-onlyBuiltDependencies:
-  - '@prisma/client'
