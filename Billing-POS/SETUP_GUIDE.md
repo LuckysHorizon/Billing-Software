@@ -137,3 +137,4 @@ grocery-pos/
 4. **Test login with default credentials**
 
 The application is ready to run once MySQL is installed and configured!
+## Application Under Testing
