@@ -37,31 +37,48 @@ public class PaymentDialog extends JDialog {
     }
 
     private void initializeComponents() {
-        totalLabel = new JLabel("Total Amount: ₹" + String.format("%.2f", totalAmount));
-        totalLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
-        totalLabel.setForeground(new Color(0, 120, 215));
+        totalLabel = new JLabel("💰 Total Amount: ₹" + String.format("%.2f", totalAmount));
+        totalLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 20));
+        totalLabel.setForeground(new Color(34, 197, 94));
+        totalLabel.setHorizontalAlignment(SwingConstants.CENTER);
         
         amountReceivedField = new JTextField(15);
-        amountReceivedField.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
+        amountReceivedField.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
         amountReceivedField.setToolTipText("Enter amount received from customer");
+        amountReceivedField.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(59, 130, 246), 2),
+            BorderFactory.createEmptyBorder(12, 15, 12, 15)
+        ));
+        amountReceivedField.setHorizontalAlignment(SwingConstants.CENTER);
         
-        changeLabel = new JLabel("Change: ₹0.00");
-        changeLabel.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
+        changeLabel = new JLabel("💸 Change: ₹0.00");
+        changeLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
+        changeLabel.setForeground(new Color(239, 68, 68));
+        changeLabel.setHorizontalAlignment(SwingConstants.CENTER);
         
         paymentMethodCombo = new JComboBox<>(Bill.PaymentMethod.values());
         paymentMethodCombo.setSelectedItem(Bill.PaymentMethod.CASH);
-        paymentMethodCombo.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
+        paymentMethodCombo.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
+        paymentMethodCombo.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(107, 114, 128), 2),
+            BorderFactory.createEmptyBorder(10, 15, 10, 15)
+        ));
         
-        processButton = new JButton("Process Payment");
-        processButton.setBackground(new Color(40, 167, 69));
+        processButton = new JButton("💳 Process Payment");
+        processButton.setBackground(new Color(34, 197, 94));
         processButton.setForeground(Color.WHITE);
         processButton.setFocusPainted(false);
-        processButton.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
+        processButton.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
+        processButton.setBorder(BorderFactory.createEmptyBorder(15, 30, 15, 30));
+        processButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
-        cancelButton = new JButton("Cancel");
-        cancelButton.setBackground(new Color(220, 53, 69));
+        cancelButton = new JButton("❌ Cancel");
+        cancelButton.setBackground(new Color(239, 68, 68));
         cancelButton.setForeground(Color.WHITE);
         cancelButton.setFocusPainted(false);
+        cancelButton.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
+        cancelButton.setBorder(BorderFactory.createEmptyBorder(12, 25, 12, 25));
+        cancelButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
     }
 
     private void setupLayout() {

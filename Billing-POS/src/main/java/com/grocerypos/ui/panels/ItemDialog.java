@@ -305,6 +305,18 @@ public class ItemDialog extends JDialog {
             return false;
         }
         
+        if (stockField.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Stock quantity is required", "Validation Error", JOptionPane.ERROR_MESSAGE);
+            stockField.requestFocus();
+            return false;
+        }
+        
+        if (gstField.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "GST percentage is required", "Validation Error", JOptionPane.ERROR_MESSAGE);
+            gstField.requestFocus();
+            return false;
+        }
+        
         try {
             new BigDecimal(priceField.getText().trim());
         } catch (NumberFormatException e) {

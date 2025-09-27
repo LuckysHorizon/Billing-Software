@@ -208,10 +208,10 @@ public class AdminPanel extends JPanel {
                 itemsModel.addRow(row);
             }
             
-            parent.setStatus("Loaded " + items.size() + " items");
+            // parent.setStatus("Loaded " + items.size() + " items");
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, "Error loading items: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            parent.setStatus("Error loading items");
+            // parent.setStatus("Error loading items");
         }
     }
 

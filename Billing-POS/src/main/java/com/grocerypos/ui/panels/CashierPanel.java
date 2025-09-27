@@ -17,6 +17,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.print.*;
+import javax.print.*;
+import javax.print.attribute.*;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
@@ -43,6 +46,11 @@ public class CashierPanel extends JPanel {
     private JButton checkoutButton;
     private JButton clearCartButton;
     private JButton printReceiptButton;
+    private JToggleButton barcodeScannerToggle;
+    private JLabel scannerStatusLabel;
+    private JButton quickAddButton;
+    private JButton discountButton;
+    private JTextField discountField;
     
     private List<BillItem> cartItems;
     private BigDecimal subtotal;
@@ -83,11 +91,55 @@ public class CashierPanel extends JPanel {
         barcodeField = new JTextField(20);
         barcodeField.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 16));
         barcodeField.setToolTipText("Scan barcode or enter item code");
+        barcodeField.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(107, 114, 128), 2),
+            BorderFactory.createEmptyBorder(12, 15, 12, 15)
+        ));
         
         // Search field
         searchField = new JTextField(20);
         searchField.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
         searchField.setToolTipText("Search items by name");
+        searchField.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(107, 114, 128), 2),
+            BorderFactory.createEmptyBorder(10, 12, 10, 12)
+        ));
+        
+        // Barcode scanner toggle
+        barcodeScannerToggle = new JToggleButton("📷 Enable Scanner");
+        barcodeScannerToggle.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
+        barcodeScannerToggle.setBackground(new Color(34, 197, 94));
+        barcodeScannerToggle.setForeground(Color.WHITE);
+        barcodeScannerToggle.setFocusPainted(false);
+        barcodeScannerToggle.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        
+        scannerStatusLabel = new JLabel("Scanner: OFF");
+        scannerStatusLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
+        scannerStatusLabel.setForeground(new Color(239, 68, 68));
+        
+        // Quick add button
+        quickAddButton = new JButton("⚡ Quick Add");
+        quickAddButton.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
+        quickAddButton.setBackground(new Color(168, 85, 247));
+        quickAddButton.setForeground(Color.WHITE);
+        quickAddButton.setFocusPainted(false);
+        quickAddButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        
+        // Discount controls
+        discountButton = new JButton("💰 Apply Discount");
+        discountButton.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
+        discountButton.setBackground(new Color(245, 158, 11));
+        discountButton.setForeground(Color.WHITE);
+        discountButton.setFocusPainted(false);
+        discountButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        
+        discountField = new JTextField(8);
+        discountField.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
+        discountField.setToolTipText("Enter discount percentage");
+        discountField.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(107, 114, 128), 1),
+            BorderFactory.createEmptyBorder(8, 10, 8, 10)
+        ));
         
         // Search results table
         String[] searchColumns = {"Name", "Barcode", "Price", "Stock", "Category"};
@@ -122,33 +174,47 @@ public class CashierPanel extends JPanel {
         cartTable.getColumnModel().getColumn(6).setPreferredWidth(100);
         
         // Buttons
-        addItemButton = new JButton("Add Item");
-        removeItemButton = new JButton("Remove");
-        checkoutButton = new JButton("Checkout");
-        clearCartButton = new JButton("Clear Cart");
-        printReceiptButton = new JButton("Print Receipt");
+        addItemButton = new JButton("➕ Add Item");
+        removeItemButton = new JButton("🗑️ Remove");
+        checkoutButton = new JButton("💳 Checkout");
+        clearCartButton = new JButton("🧹 Clear Cart");
+        printReceiptButton = new JButton("🖨️ Print Receipt");
         
-        // Configure buttons
-        addItemButton.setBackground(new Color(0, 120, 215));
+        // Configure buttons with modern styling
+        addItemButton.setBackground(new Color(59, 130, 246));
         addItemButton.setForeground(Color.WHITE);
         addItemButton.setFocusPainted(false);
+        addItemButton.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
+        addItemButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        addItemButton.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
         
-        checkoutButton.setBackground(new Color(40, 167, 69));
+        checkoutButton.setBackground(new Color(34, 197, 94));
         checkoutButton.setForeground(Color.WHITE);
         checkoutButton.setFocusPainted(false);
-        checkoutButton.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
+        checkoutButton.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
+        checkoutButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        checkoutButton.setBorder(BorderFactory.createEmptyBorder(15, 30, 15, 30));
         
-        removeItemButton.setBackground(new Color(220, 53, 69));
+        removeItemButton.setBackground(new Color(239, 68, 68));
         removeItemButton.setForeground(Color.WHITE);
         removeItemButton.setFocusPainted(false);
+        removeItemButton.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
+        removeItemButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        removeItemButton.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
         
-        clearCartButton.setBackground(new Color(108, 117, 125));
+        clearCartButton.setBackground(new Color(107, 114, 128));
         clearCartButton.setForeground(Color.WHITE);
         clearCartButton.setFocusPainted(false);
+        clearCartButton.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
+        clearCartButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        clearCartButton.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
         
-        printReceiptButton.setBackground(new Color(23, 162, 184));
+        printReceiptButton.setBackground(new Color(14, 165, 233));
         printReceiptButton.setForeground(Color.WHITE);
         printReceiptButton.setFocusPainted(false);
+        printReceiptButton.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
+        printReceiptButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        printReceiptButton.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
         
         // Total labels
         totalLabel = new JLabel("Subtotal: ₹0.00");
@@ -170,13 +236,35 @@ public class CashierPanel extends JPanel {
         topPanel.setBorder(BorderFactory.createTitledBorder("Item Entry"));
         topPanel.setBackground(Color.WHITE);
         
-        JPanel inputPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
+        JPanel inputPanel = new JPanel(new BorderLayout(10, 10));
         inputPanel.setBackground(Color.WHITE);
-        inputPanel.add(new JLabel("Barcode:"));
-        inputPanel.add(barcodeField);
-        inputPanel.add(new JLabel("Search:"));
-        inputPanel.add(searchField);
-        inputPanel.add(addItemButton);
+        
+        // Top row - Barcode and scanner controls
+        JPanel barcodePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
+        barcodePanel.setBackground(Color.WHITE);
+        barcodePanel.add(new JLabel("📱 Barcode:"));
+        barcodePanel.add(barcodeField);
+        barcodePanel.add(barcodeScannerToggle);
+        barcodePanel.add(scannerStatusLabel);
+        
+        // Middle row - Search and quick add
+        JPanel searchRowPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
+        searchRowPanel.setBackground(Color.WHITE);
+        searchRowPanel.add(new JLabel("🔍 Search:"));
+        searchRowPanel.add(searchField);
+        searchRowPanel.add(addItemButton);
+        searchRowPanel.add(quickAddButton);
+        
+        // Bottom row - Discount controls
+        JPanel discountPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
+        discountPanel.setBackground(Color.WHITE);
+        discountPanel.add(new JLabel("💰 Discount %:"));
+        discountPanel.add(discountField);
+        discountPanel.add(discountButton);
+        
+        inputPanel.add(barcodePanel, BorderLayout.NORTH);
+        inputPanel.add(searchRowPanel, BorderLayout.CENTER);
+        inputPanel.add(discountPanel, BorderLayout.SOUTH);
         
         topPanel.add(inputPanel, BorderLayout.CENTER);
         add(topPanel, BorderLayout.NORTH);
@@ -274,6 +362,15 @@ public class CashierPanel extends JPanel {
         
         // Print receipt button
         printReceiptButton.addActionListener(e -> printReceipt());
+        
+        // Barcode scanner toggle
+        barcodeScannerToggle.addActionListener(e -> toggleBarcodeScanner());
+        
+        // Quick add button
+        quickAddButton.addActionListener(e -> showQuickAddDialog());
+        
+        // Discount button
+        discountButton.addActionListener(e -> applyDiscount());
         
         // Cart table selection
         cartTable.getSelectionModel().addListSelectionListener(e -> {
@@ -406,6 +503,15 @@ public class CashierPanel extends JPanel {
         billItem.setQuantity(quantity);
         billItem.setUnitPrice(item.getPrice());
         billItem.setGstPercentage(item.getGstPercentage());
+        
+        // Initialize null fields with safe defaults
+        if (billItem.getDiscountPercentage() == null) {
+            billItem.setDiscountPercentage(BigDecimal.ZERO);
+        }
+        if (billItem.getDiscountAmount() == null) {
+            billItem.setDiscountAmount(BigDecimal.ZERO);
+        }
+        
         billItem.calculateTotals();
         
         cartItems.add(billItem);
@@ -584,7 +690,157 @@ public class CashierPanel extends JPanel {
         JScrollPane scrollPane = new JScrollPane(receiptArea);
         scrollPane.setPreferredSize(new Dimension(400, 500));
         
-        JOptionPane.showMessageDialog(this, scrollPane, "Receipt", JOptionPane.INFORMATION_MESSAGE);
-        parent.setStatus("Receipt generated");
+        // Show receipt dialog with print option
+        int option = JOptionPane.showOptionDialog(this, 
+            scrollPane, 
+            "Receipt - " + currentBillNumber, 
+            JOptionPane.YES_NO_OPTION, 
+            JOptionPane.INFORMATION_MESSAGE,
+            null,
+            new String[]{"🖨️ Print Receipt", "📄 View Only"},
+            "🖨️ Print Receipt");
+        
+        if (option == 0) {
+            // Print receipt
+            try {
+                printReceiptToPrinter(receipt.toString());
+                parent.setStatus("Receipt printed successfully");
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this, "Print failed: " + e.getMessage(), "Print Error", JOptionPane.ERROR_MESSAGE);
+                parent.setStatus("Print failed: " + e.getMessage());
+            }
+        } else {
+            parent.setStatus("Receipt generated");
+        }
+    }
+    
+    private void toggleBarcodeScanner() {
+        if (barcodeScannerToggle.isSelected()) {
+            barcodeScannerToggle.setText("📷 Scanner ON");
+            barcodeScannerToggle.setBackground(new Color(34, 197, 94));
+            scannerStatusLabel.setText("Scanner: ON");
+            scannerStatusLabel.setForeground(new Color(34, 197, 94));
+            barcodeField.setBackground(new Color(240, 253, 244));
+            barcodeField.setToolTipText("Scanner is active - scan barcodes directly");
+            barcodeField.requestFocus();
+            parent.setStatus("Barcode scanner enabled");
+        } else {
+            barcodeScannerToggle.setText("📷 Enable Scanner");
+            barcodeScannerToggle.setBackground(new Color(34, 197, 94));
+            scannerStatusLabel.setText("Scanner: OFF");
+            scannerStatusLabel.setForeground(new Color(239, 68, 68));
+            barcodeField.setBackground(Color.WHITE);
+            barcodeField.setToolTipText("Scan barcode or enter item code");
+            parent.setStatus("Barcode scanner disabled");
+        }
+    }
+    
+    private void showQuickAddDialog() {
+        String[] options = {"Add by Barcode", "Add by Name", "Add by Category"};
+        int choice = JOptionPane.showOptionDialog(this,
+            "How would you like to add items?",
+            "Quick Add",
+            JOptionPane.YES_NO_CANCEL_OPTION,
+            JOptionPane.QUESTION_MESSAGE,
+            null,
+            options,
+            options[0]);
+        
+        switch (choice) {
+            case 0: // Barcode
+                barcodeField.requestFocus();
+                break;
+            case 1: // Name
+                searchField.requestFocus();
+                break;
+            case 2: // Category
+                showCategoryDialog();
+                break;
+        }
+    }
+    
+    private void showCategoryDialog() {
+        try {
+            List<String> categories = itemDAO.getAllCategories();
+            if (categories.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "No categories found", "No Categories", JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+            
+            String[] categoryArray = categories.toArray(new String[0]);
+            String selectedCategory = (String) JOptionPane.showInputDialog(this,
+                "Select a category:",
+                "Category Selection",
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                categoryArray,
+                categoryArray[0]);
+            
+            if (selectedCategory != null) {
+                searchField.setText(selectedCategory);
+                searchItems();
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error loading categories: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
+    private void applyDiscount() {
+        try {
+            String discountText = discountField.getText().trim();
+            if (discountText.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Please enter discount percentage", "Input Required", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            
+            BigDecimal discountPercent = new BigDecimal(discountText);
+            if (discountPercent.compareTo(BigDecimal.ZERO) < 0 || discountPercent.compareTo(new BigDecimal("100")) > 0) {
+                JOptionPane.showMessageDialog(this, "Discount must be between 0 and 100%", "Invalid Discount", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            
+            // Apply discount to all items in cart
+            for (BillItem item : cartItems) {
+                item.setDiscountPercentageAndRecalculate(discountPercent);
+            }
+            
+            updateCartTable();
+            updateTotals();
+            
+            JOptionPane.showMessageDialog(this, "Discount of " + discountPercent + "% applied to all items", "Discount Applied", JOptionPane.INFORMATION_MESSAGE);
+            parent.setStatus("Discount applied: " + discountPercent + "%");
+            
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Invalid discount format", "Input Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
+    private void printReceiptToPrinter(String receiptContent) throws Exception {
+        // Create a simple text printer job
+        PrinterJob printerJob = PrinterJob.getPrinterJob();
+        
+        // Set up the print format
+        printerJob.setJobName("Grocery POS Receipt - " + currentBillNumber);
+        
+        // Show print dialog
+        if (printerJob.printDialog()) {
+            printerJob.setPrintable((graphics, pageFormat, pageIndex) -> {
+                if (pageIndex > 0) return Printable.NO_SUCH_PAGE;
+                
+                Graphics2D g2d = (Graphics2D) graphics;
+                g2d.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 10));
+                
+                String[] lines = receiptContent.split("\n");
+                int y = 50;
+                for (String line : lines) {
+                    g2d.drawString(line, 50, y);
+                    y += 15;
+                }
+                
+                return Printable.PAGE_EXISTS;
+            });
+            
+            printerJob.print();
+        }
     }
 }

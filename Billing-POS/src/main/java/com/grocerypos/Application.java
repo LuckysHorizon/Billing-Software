@@ -96,24 +96,26 @@ public class Application extends JFrame {
 
     private void createSidebar() {
         sidebarPanel = new JPanel(new BorderLayout());
-        sidebarPanel.setPreferredSize(new Dimension(200, 0));
-        sidebarPanel.setBackground(new Color(240, 240, 240));
-        sidebarPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, Color.GRAY));
+        sidebarPanel.setPreferredSize(new Dimension(220, 0));
+        sidebarPanel.setBackground(new Color(45, 55, 72));
+        sidebarPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, new Color(74, 85, 104)));
         
         // User info panel
         JPanel userPanel = new JPanel(new BorderLayout());
-        userPanel.setBackground(new Color(0, 120, 215));
-        userPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        userPanel.setBackground(new Color(66, 153, 225));
+        userPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
         
         userLabel = new JLabel("Not Logged In");
         userLabel.setForeground(Color.WHITE);
-        userLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
+        userLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
+        userLabel.setHorizontalAlignment(SwingConstants.CENTER);
         userPanel.add(userLabel, BorderLayout.CENTER);
         
         // Navigation buttons panel
         JPanel navPanel = new JPanel();
         navPanel.setLayout(new BoxLayout(navPanel, BoxLayout.Y_AXIS));
-        navPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        navPanel.setBorder(BorderFactory.createEmptyBorder(20, 15, 15, 15));
+        navPanel.setBackground(new Color(45, 55, 72));
         
         // Create navigation buttons
         adminButton = createNavButton("Admin Panel", "👨‍💼");
@@ -142,26 +144,34 @@ public class Application extends JFrame {
 
     private JButton createNavButton(String text, String icon) {
         JButton button = new JButton("<html><center>" + icon + "<br>" + text + "</center></html>");
-        button.setPreferredSize(new Dimension(180, 60));
-        button.setMaximumSize(new Dimension(180, 60));
+        button.setPreferredSize(new Dimension(190, 70));
+        button.setMaximumSize(new Dimension(190, 70));
         button.setAlignmentX(Component.CENTER_ALIGNMENT);
-        button.setBackground(Color.WHITE);
+        button.setBackground(new Color(74, 85, 104));
+        button.setForeground(Color.WHITE);
         button.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(Color.GRAY, 1),
-            BorderFactory.createEmptyBorder(10, 10, 10, 10)
+            BorderFactory.createLineBorder(new Color(107, 114, 128), 1),
+            BorderFactory.createEmptyBorder(15, 15, 15, 15)
         ));
         button.setFocusPainted(false);
-        button.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
+        button.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
         // Add hover effect
         button.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent e) {
-                button.setBackground(new Color(0, 120, 215));
-                button.setForeground(Color.WHITE);
+                button.setBackground(new Color(66, 153, 225));
+                button.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(new Color(59, 130, 246), 2),
+                    BorderFactory.createEmptyBorder(13, 13, 13, 13)
+                ));
             }
             public void mouseExited(java.awt.event.MouseEvent e) {
-                button.setBackground(Color.WHITE);
-                button.setForeground(Color.BLACK);
+                button.setBackground(new Color(74, 85, 104));
+                button.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(new Color(107, 114, 128), 1),
+                    BorderFactory.createEmptyBorder(15, 15, 15, 15)
+                ));
             }
         });
         
@@ -249,7 +259,9 @@ public class Application extends JFrame {
     }
 
     public void setStatus(String status) {
-        statusLabel.setText(status);
+        if (statusLabel != null) {
+            statusLabel.setText(status);
+        }
     }
 
     public static void main(String[] args) {

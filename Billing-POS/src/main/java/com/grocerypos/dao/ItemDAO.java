@@ -293,4 +293,21 @@ public class ItemDAO {
         
         return item;
     }
+    
+    /**
+     * Get all unique categories
+     */
+    public List<String> getAllCategories() throws SQLException {
+        List<String> categories = new ArrayList<>();
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement statement = connection.prepareStatement("SELECT DISTINCT category FROM items WHERE category IS NOT NULL AND category != '' ORDER BY category")) {
+            
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    categories.add(resultSet.getString("category"));
+                }
+            }
+        }
+        return categories;
+    }
 }
