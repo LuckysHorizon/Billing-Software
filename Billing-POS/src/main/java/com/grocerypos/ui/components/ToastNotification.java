@@ -4,8 +4,7 @@ package com.grocerypos.ui.components;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+// removed unused ActionEvent/ActionListener imports
 
 /**
  * Toast notification component with animations
@@ -75,12 +74,36 @@ public class ToastNotification extends JWindow {
     }
     
     private void setupLayout() {
+        JPanel container = new JPanel(new BorderLayout(10, 10)) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                int w = getWidth();
+                int h = getHeight();
+                g2.setColor(new Color(255,255,255,220));
+                g2.fillRoundRect(0, 0, w, h, 16, 16);
+                g2.setColor(new Color(0,0,0,30));
+                g2.drawRoundRect(0, 0, w-1, h-1, 16, 16);
+                g2.dispose();
+                super.paintComponent(g);
+            }
+        };
+        container.setOpaque(false);
+        container.setBorder(BorderFactory.createEmptyBorder(10, 14, 10, 10));
+        container.add(iconLabel, BorderLayout.WEST);
+        container.add(messageLabel, BorderLayout.CENTER);
+        JButton closeBtn = (JButton)((BorderLayout)getLayout()).getLayoutComponent(BorderLayout.EAST);
+        // In case we want to re-add close, but keep minimal for macOS look
+        remove(closeBtn);
+        setLayout(new BorderLayout());
+        add(container, BorderLayout.CENTER);
         pack();
         setLocationRelativeTo(getParent());
         if (getParent() != null) {
             Point parentLocation = getParent().getLocationOnScreen();
-            setLocation(parentLocation.x + getParent().getWidth() - getWidth() - 20, 
-                       parentLocation.y + 20);
+            setLocation(parentLocation.x + getParent().getWidth() - getWidth() - 24,
+                       parentLocation.y + 24);
         }
     }
     

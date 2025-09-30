@@ -4,8 +4,7 @@ import com.grocerypos.model.Bill;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+// removed unused ActionEvent/ActionListener imports
 import java.math.BigDecimal;
 
 /**
@@ -16,6 +15,9 @@ public class PaymentDialog extends JDialog {
     private JTextField amountReceivedField;
     private JLabel changeLabel;
     private JComboBox<Bill.PaymentMethod> paymentMethodCombo;
+    private JToggleButton cashToggle;
+    private JToggleButton cardToggle;
+    private JToggleButton upiToggle;
     private JButton processButton;
     private JButton cancelButton;
     
@@ -48,9 +50,23 @@ public class PaymentDialog extends JDialog {
         paymentMethodCombo = new JComboBox<>(Bill.PaymentMethod.values());
         paymentMethodCombo.setSelectedItem(Bill.PaymentMethod.CASH);
         paymentMethodCombo.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
+
+        // Segmented payment buttons
+        cashToggle = new JToggleButton("Cash");
+        cardToggle = new JToggleButton("Card");
+        upiToggle = new JToggleButton("UPI");
+        ButtonGroup pmGroup = new ButtonGroup();
+        pmGroup.add(cashToggle);
+        pmGroup.add(cardToggle);
+        pmGroup.add(upiToggle);
+        cashToggle.setSelected(true);
+        styleSegment(cashToggle, true, false);
+        styleSegment(cardToggle, false, false);
+        styleSegment(upiToggle, false, true);
         
-        processButton = new JButton("Process Payment");
-        processButton.setBackground(new Color(40, 167, 69));
+        processButton = new JButton("Checkout");
+        processButton.putClientProperty("JButton.buttonType", "roundRect");
+        processButton.setBackground(new Color(0, 122, 255));
         processButton.setForeground(Color.WHITE);
         processButton.setFocusPainted(false);
         processButton.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
@@ -76,13 +92,17 @@ public class PaymentDialog extends JDialog {
         gbc.anchor = GridBagConstraints.CENTER;
         mainPanel.add(totalLabel, gbc);
         
-        // Payment method
+        // Payment method segmented control
         gbc.gridx = 0; gbc.gridy = 1; gbc.gridwidth = 1;
         gbc.anchor = GridBagConstraints.EAST;
         mainPanel.add(new JLabel("Payment Method:"), gbc);
-        
+        JPanel segmented = new JPanel(new GridLayout(1, 3, 1, 0));
+        segmented.setOpaque(false);
+        segmented.add(cashToggle);
+        segmented.add(cardToggle);
+        segmented.add(upiToggle);
         gbc.gridx = 1; gbc.anchor = GridBagConstraints.WEST;
-        mainPanel.add(paymentMethodCombo, gbc);
+        mainPanel.add(segmented, gbc);
         
         // Amount received
         gbc.gridx = 0; gbc.gridy = 2; gbc.anchor = GridBagConstraints.EAST;
@@ -116,16 +136,33 @@ public class PaymentDialog extends JDialog {
             public void changedUpdate(javax.swing.event.DocumentEvent e) { updateChange(); }
         });
         
+        // Segmented selection sync to combo
+        cashToggle.addActionListener(e -> {
+            paymentMethodCombo.setSelectedItem(Bill.PaymentMethod.CASH);
+            updateChange();
+        });
+        cardToggle.addActionListener(e -> {
+            paymentMethodCombo.setSelectedItem(Bill.PaymentMethod.CARD);
+            updateChange();
+        });
+        upiToggle.addActionListener(e -> {
+            paymentMethodCombo.setSelectedItem(Bill.PaymentMethod.UPI);
+            updateChange();
+        });
+        
         // Payment method change
         paymentMethodCombo.addActionListener(e -> {
             Bill.PaymentMethod method = (Bill.PaymentMethod) paymentMethodCombo.getSelectedItem();
             if (method == Bill.PaymentMethod.CASH) {
                 amountReceivedField.setEnabled(true);
                 amountReceivedField.setText("");
+                cashToggle.setSelected(true);
             } else {
                 amountReceivedField.setEnabled(false);
                 amountReceivedField.setText(String.format("%.2f", totalAmount));
                 updateChange();
+                if (method == Bill.PaymentMethod.CARD) cardToggle.setSelected(true);
+                if (method == Bill.PaymentMethod.UPI) upiToggle.setSelected(true);
             }
         });
         
@@ -143,7 +180,7 @@ public class PaymentDialog extends JDialog {
     }
 
     private void setupDialog() {
-        setSize(400, 300);
+        setSize(420, 320);
         setLocationRelativeTo(getParent());
         setResizable(false);
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
@@ -208,5 +245,12 @@ public class PaymentDialog extends JDialog {
 
     public Bill.PaymentMethod getPaymentMethod() {
         return selectedPaymentMethod;
+    }
+
+    private void styleSegment(AbstractButton b, boolean left, boolean right) {
+        b.putClientProperty("JButton.buttonType", "segmented");
+        b.putClientProperty("JButton.segmentPosition", left ? "first" : right ? "last" : "middle");
+        b.setFocusPainted(false);
+        b.setBorder(BorderFactory.createEmptyBorder(6, 10, 6, 10));
     }
 }

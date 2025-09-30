@@ -4,12 +4,14 @@ D:\Projects\Billing-POS\src\main\java\com\grocerypos\util\PasswordUtil.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\ui\LoginFrame.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\ui\panels\DashboardPanel.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\ui\panels\SettingsPanel.java
+D:\Projects\Billing-POS\src\main\java\com\grocerypos\ui\components\MacTopBar.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\ui\InventoryWindow.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\ui\PaymentDialog.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\ui\components\LoadingSpinner.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\ui\panels\LoginPanel.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\dao\InventoryMovementDAO.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\ui\BillingWindow.java
+D:\Projects\Billing-POS\src\main\java\com\grocerypos\ui\components\GlassSidebar.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\model\BillItem.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\util\GeneratePasswords.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\dao\BillDAO.java

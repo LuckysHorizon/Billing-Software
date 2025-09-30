@@ -42,7 +42,7 @@ public class ThemeManager {
         }
     }
     
-    private static Theme currentTheme = Theme.LIGHT;
+    private static Theme currentTheme = Theme.MAC_LIGHT;
     private static final Map<Theme, LookAndFeel> themeCache = new HashMap<>();
     
     /**
@@ -67,6 +67,30 @@ public class ThemeManager {
             LookAndFeel laf = getLookAndFeel(theme);
             UIManager.setLookAndFeel(laf);
             currentTheme = theme;
+            // Global UI defaults tuned for macOS-inspired look
+            // Rounded corners and focus widths
+            UIManager.put("Component.arc", 12);
+            UIManager.put("Button.arc", 12);
+            UIManager.put("TextComponent.arc", 12);
+            UIManager.put("TabbedPane.selectedBackground", new java.awt.Color(0,0,0,0));
+            UIManager.put("ScrollBar.showButtons", false);
+            UIManager.put("Button.focusWidth", 1);
+            UIManager.put("Component.focusWidth", 1);
+            // Prefer native window decorations (gives rounded corners on supported OS)
+            com.formdev.flatlaf.FlatLaf.setUseNativeWindowDecorations(true);
+            // Font: prefer SF Pro if available, fallback to system UI
+            String[] preferredFonts = new String[] { "SF Pro Text", "SF Pro Display", "San Francisco", "Segoe UI", "Helvetica Neue", "Arial" };
+            java.awt.Font chosen = null;
+            for (String name : preferredFonts) {
+                java.awt.Font f = new java.awt.Font(name, java.awt.Font.PLAIN, 13);
+                if (f.getFamily().equals(name) || f.canDisplay('A')) {
+                    chosen = f;
+                    break;
+                }
+            }
+            if (chosen != null) {
+                UIManager.put("defaultFont", chosen);
+            }
             
             // Update all existing windows
             for (Window window : Window.getWindows()) {
@@ -115,6 +139,9 @@ public class ThemeManager {
      * Initialize with default theme
      */
     public static void initialize() {
+        // On macOS, let menus live in the screen menu bar
+        System.setProperty("apple.laf.useScreenMenuBar", "true");
+        System.setProperty("apple.awt.application.appearance", "system");
         applyTheme(currentTheme);
     }
 }

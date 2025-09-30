@@ -1,13 +1,9 @@
 package com.grocerypos.ui;
 
-import com.grocerypos.Main;
-import com.grocerypos.model.User;
 import com.grocerypos.util.SessionManager;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 /**
  * Main window of the Grocery POS application
@@ -142,8 +138,8 @@ public class MainWindow extends JFrame {
     private void configureToolBarButton(JButton button, String tooltip) {
         button.setToolTipText(tooltip);
         button.setFocusPainted(false);
-        button.setBorderPainted(false);
-        button.setContentAreaFilled(false);
+        button.putClientProperty("JButton.buttonType", "roundRect");
+        button.putClientProperty("JComponent.roundRect", true);
         button.setRolloverEnabled(true);
     }
 
@@ -204,10 +200,11 @@ public class MainWindow extends JFrame {
     private void configureQuickActionButton(JButton button) {
         button.setPreferredSize(new Dimension(150, 40));
         button.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
-        button.setBackground(new Color(0, 120, 215));
+        button.putClientProperty("JButton.buttonType", "roundRect");
+        button.putClientProperty("JComponent.roundRect", true);
+        button.setBackground(new Color(0,122,255));
         button.setForeground(Color.WHITE);
         button.setFocusPainted(false);
-        button.setBorderPainted(false);
     }
 
     private void setupEventHandlers() {

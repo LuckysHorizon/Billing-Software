@@ -12,8 +12,7 @@ import com.grocerypos.util.SessionManager;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+// removed unused ActionEvent/ActionListener imports
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.math.BigDecimal;
@@ -94,8 +93,11 @@ public class BillingWindow extends JFrame {
             }
         };
         cartTable = new JTable(cartModel);
-        cartTable.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
-        cartTable.setRowHeight(25);
+        cartTable.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 13));
+        cartTable.setRowHeight(28);
+        cartTable.putClientProperty("JTable.showGrid", false);
+        cartTable.putClientProperty("JTable.alternateRowColor", new Color(246, 246, 248));
+        cartTable.getTableHeader().putClientProperty("FlatLaf.style", "font: medium 13");
         cartTable.getColumnModel().getColumn(0).setPreferredWidth(200);
         cartTable.getColumnModel().getColumn(1).setPreferredWidth(120);
         cartTable.getColumnModel().getColumn(2).setPreferredWidth(50);
@@ -112,23 +114,28 @@ public class BillingWindow extends JFrame {
         printReceiptButton = new JButton("Print Receipt");
         
         // Configure buttons
-        addItemButton.setBackground(new Color(0, 120, 215));
+        addItemButton.putClientProperty("JButton.buttonType", "roundRect");
+        addItemButton.setBackground(new Color(0,122,255));
         addItemButton.setForeground(Color.WHITE);
         addItemButton.setFocusPainted(false);
         
-        checkoutButton.setBackground(new Color(40, 167, 69));
+        checkoutButton.putClientProperty("JButton.buttonType", "roundRect");
+        checkoutButton.setBackground(new Color(0,122,255));
         checkoutButton.setForeground(Color.WHITE);
         checkoutButton.setFocusPainted(false);
         checkoutButton.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
         
+        removeItemButton.putClientProperty("JButton.buttonType", "roundRect");
         removeItemButton.setBackground(new Color(220, 53, 69));
         removeItemButton.setForeground(Color.WHITE);
         removeItemButton.setFocusPainted(false);
         
+        clearCartButton.putClientProperty("JButton.buttonType", "roundRect");
         clearCartButton.setBackground(new Color(108, 117, 125));
         clearCartButton.setForeground(Color.WHITE);
         clearCartButton.setFocusPainted(false);
         
+        printReceiptButton.putClientProperty("JButton.buttonType", "roundRect");
         printReceiptButton.setBackground(new Color(23, 162, 184));
         printReceiptButton.setForeground(Color.WHITE);
         printReceiptButton.setFocusPainted(false);
@@ -167,6 +174,8 @@ public class BillingWindow extends JFrame {
         
         JScrollPane scrollPane = new JScrollPane(cartTable);
         scrollPane.setPreferredSize(new Dimension(800, 300));
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.getViewport().setBackground(Color.WHITE);
         centerPanel.add(scrollPane, BorderLayout.CENTER);
         
         // Cart buttons
@@ -178,8 +187,23 @@ public class BillingWindow extends JFrame {
         add(centerPanel, BorderLayout.CENTER);
         
         // Bottom panel - Totals and checkout
-        JPanel bottomPanel = new JPanel(new BorderLayout(10, 10));
-        bottomPanel.setBorder(BorderFactory.createTitledBorder("Bill Summary"));
+        JPanel bottomPanel = new JPanel(new BorderLayout(10, 10)) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                int w = getWidth();
+                int h = getHeight();
+                Color base = new Color(255,255,255,200);
+                g2.setColor(base);
+                g2.fillRoundRect(0, 0, w, h, 16, 16);
+                g2.setColor(new Color(0,0,0,25));
+                g2.drawRoundRect(0, 0, w-1, h-1, 16, 16);
+                g2.dispose();
+                super.paintComponent(g);
+            }
+        };
+        bottomPanel.setOpaque(false);
         
         // Totals panel
         JPanel totalsPanel = new JPanel(new GridLayout(3, 1, 5, 5));

@@ -1,6 +1,8 @@
 package com.grocerypos;
 
-import com.formdev.flatlaf.FlatLightLaf;
+// import removed: FlatLightLaf not directly used
+import com.grocerypos.ui.components.GlassSidebar;
+import com.grocerypos.ui.components.MacTopBar;
 import com.grocerypos.database.DBUtil;
 import com.grocerypos.ui.panels.*;
 import com.grocerypos.ui.components.ToastNotification;
@@ -9,8 +11,7 @@ import com.grocerypos.util.ThemeManager;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+// unused imports removed
 
 /**
  * Main application class with CardLayout navigation
@@ -19,7 +20,9 @@ public class Application extends JFrame {
     private CardLayout cardLayout;
     private JPanel mainPanel;
     private JPanel sidebarPanel;
-    private JLabel userLabel;
+    private MacTopBar topBar;
+    // Deprecated user label; status bar provides feedback
+    // private JLabel userLabel;
     private JLabel statusLabel;
     
     // Panels
@@ -30,14 +33,7 @@ public class Application extends JFrame {
     private DashboardPanel dashboardPanel;
     private SettingsPanel settingsPanel;
     
-    // Navigation buttons
-    private JButton dashboardButton;
-    private JButton adminButton;
-    private JButton cashierButton;
-    private JButton reportsButton;
-    private JButton settingsButton;
-    private JButton logoutButton;
-    private JButton themeButton;
+    // Legacy navigation buttons removed; navigation handled by GlassSidebar
 
     public Application() {
         initializeApplication();
@@ -90,10 +86,12 @@ public class Application extends JFrame {
         mainPanel.add(reportsPanel, "REPORTS");
         mainPanel.add(settingsPanel, "SETTINGS");
         
-        // Create sidebar
+        // Create top bar and sidebar
+        createTopBar();
         createSidebar();
         
         // Add components to frame
+        add(topBar, BorderLayout.NORTH);
         add(sidebarPanel, BorderLayout.WEST);
         add(mainPanel, BorderLayout.CENTER);
         
@@ -102,94 +100,60 @@ public class Application extends JFrame {
     }
 
     private void createSidebar() {
-        sidebarPanel = new JPanel(new BorderLayout());
-        sidebarPanel.setPreferredSize(new Dimension(220, 0));
-        sidebarPanel.setBackground(new Color(45, 55, 72));
-        sidebarPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, new Color(74, 85, 104)));
-        
-        // User info panel
-        JPanel userPanel = new JPanel(new BorderLayout());
-        userPanel.setBackground(new Color(66, 153, 225));
-        userPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
-        
-        userLabel = new JLabel("Not Logged In");
-        userLabel.setForeground(Color.WHITE);
-        userLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
-        userLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        userPanel.add(userLabel, BorderLayout.CENTER);
-        
-        // Navigation buttons panel
-        JPanel navPanel = new JPanel();
-        navPanel.setLayout(new BoxLayout(navPanel, BoxLayout.Y_AXIS));
-        navPanel.setBorder(BorderFactory.createEmptyBorder(20, 15, 15, 15));
-        navPanel.setBackground(new Color(45, 55, 72));
-        
-        // Create navigation buttons
-        dashboardButton = createNavButton("Dashboard", "📊");
-        adminButton = createNavButton("Admin Panel", "👨‍💼");
-        cashierButton = createNavButton("Cashier Panel", "🛒");
-        reportsButton = createNavButton("Reports", "📈");
-        settingsButton = createNavButton("Settings", "⚙️");
-        themeButton = createNavButton("Theme", "🎨");
-        logoutButton = createNavButton("Logout", "🚪");
-        
-        // Add buttons to navigation panel
-        navPanel.add(dashboardButton);
-        navPanel.add(Box.createVerticalStrut(10));
-        navPanel.add(adminButton);
-        navPanel.add(Box.createVerticalStrut(10));
-        navPanel.add(cashierButton);
-        navPanel.add(Box.createVerticalStrut(10));
-        navPanel.add(reportsButton);
-        navPanel.add(Box.createVerticalStrut(10));
-        navPanel.add(settingsButton);
-        navPanel.add(Box.createVerticalStrut(10));
-        navPanel.add(themeButton);
-        navPanel.add(Box.createVerticalStrut(20));
-        navPanel.add(logoutButton);
-        
-        sidebarPanel.add(userPanel, BorderLayout.NORTH);
-        sidebarPanel.add(navPanel, BorderLayout.CENTER);
-        
-        // Initially hide sidebar
+        GlassSidebar glass = new GlassSidebar();
+        glass.setListener(new GlassSidebar.SidebarListener() {
+            @Override
+            public void onNavigate(String key) {
+                switch (key) {
+                    case "DASHBOARD":
+                        showDashboardPanel();
+                        break;
+                    case "PRODUCTS":
+                        showAdminPanel();
+                        break;
+                    case "CUSTOMERS":
+                        showAdminPanel();
+                        break;
+                    case "CASHIER":
+                        showCashierPanel();
+                        break;
+                    case "REPORTS":
+                        showReportsPanel();
+                        break;
+                    case "SETTINGS":
+                        showSettingsPanel();
+                        break;
+                    default:
+                        break;
+                }
+            }
+            @Override
+            public void onThemeChanged(com.grocerypos.util.ThemeManager.Theme theme) {
+                // Already applied in component; keep hook for future persistence
+            }
+        });
+
+        JPanel wrapper = new JPanel(new BorderLayout()) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                setOpaque(false);
+                super.paintComponent(g);
+            }
+        };
+        wrapper.setOpaque(false);
+        wrapper.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
+        wrapper.add(glass, BorderLayout.CENTER);
+
+        sidebarPanel = wrapper;
+        sidebarPanel.setPreferredSize(new Dimension(260, 0));
         sidebarPanel.setVisible(false);
     }
 
-    private JButton createNavButton(String text, String icon) {
-        JButton button = new JButton("<html><center>" + icon + "<br>" + text + "</center></html>");
-        button.setPreferredSize(new Dimension(190, 70));
-        button.setMaximumSize(new Dimension(190, 70));
-        button.setAlignmentX(Component.CENTER_ALIGNMENT);
-        button.setBackground(new Color(74, 85, 104));
-        button.setForeground(Color.WHITE);
-        button.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(107, 114, 128), 1),
-            BorderFactory.createEmptyBorder(15, 15, 15, 15)
-        ));
-        button.setFocusPainted(false);
-        button.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
-        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        
-        // Add hover effect
-        button.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent e) {
-                button.setBackground(new Color(66, 153, 225));
-                button.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(new Color(59, 130, 246), 2),
-                    BorderFactory.createEmptyBorder(13, 13, 13, 13)
-                ));
-            }
-            public void mouseExited(java.awt.event.MouseEvent e) {
-                button.setBackground(new Color(74, 85, 104));
-                button.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(new Color(107, 114, 128), 1),
-                    BorderFactory.createEmptyBorder(15, 15, 15, 15)
-                ));
-            }
-        });
-        
-        return button;
+    private void createTopBar() {
+        topBar = new MacTopBar("Grocery POS");
     }
+
+    // removed legacy sidebar button builder; replaced by GlassSidebar
 
     private void createStatusBar() {
         JPanel statusBar = new JPanel(new BorderLayout());
@@ -210,13 +174,7 @@ public class Application extends JFrame {
     }
 
     private void setupEventHandlers() {
-        dashboardButton.addActionListener(e -> showDashboardPanel());
-        adminButton.addActionListener(e -> showAdminPanel());
-        cashierButton.addActionListener(e -> showCashierPanel());
-        reportsButton.addActionListener(e -> showReportsPanel());
-        settingsButton.addActionListener(e -> showSettingsPanel());
-        themeButton.addActionListener(e -> showThemeDialog());
-        logoutButton.addActionListener(e -> logout());
+        // Navigation is provided by GlassSidebar listener; no additional handlers needed here
     }
 
     public void showLoginPanel() {
@@ -260,7 +218,7 @@ public class Application extends JFrame {
 
     public void loginSuccessful() {
         sidebarPanel.setVisible(true);
-        userLabel.setText("Welcome, " + SessionManager.getCurrentUserName());
+        // Optionally reflect user in status bar
         showDashboardPanel(); // Default to dashboard after login
         ToastNotification.showSuccess(this, "Login successful! Welcome to Grocery POS");
     }
@@ -275,7 +233,6 @@ public class Application extends JFrame {
         if (result == JOptionPane.YES_OPTION) {
             SessionManager.clearSession();
             sidebarPanel.setVisible(false);
-            userLabel.setText("Not Logged In");
             showLoginPanel();
         }
     }
@@ -286,6 +243,7 @@ public class Application extends JFrame {
         }
     }
     
+    @SuppressWarnings("unused")
     private void showThemeDialog() {
         ThemeManager.Theme[] themes = ThemeManager.getAllThemes();
         String[] themeNames = new String[themes.length];

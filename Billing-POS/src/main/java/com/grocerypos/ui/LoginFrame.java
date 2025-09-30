@@ -1,14 +1,11 @@
 package com.grocerypos.ui;
 
-import com.grocerypos.Main;
 import com.grocerypos.dao.UserDAO;
 import com.grocerypos.model.User;
 import com.grocerypos.util.PasswordUtil;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.sql.SQLException;
@@ -60,22 +57,23 @@ public class LoginFrame extends JFrame {
         statusLabel.setForeground(Color.BLUE);
 
         // Set button properties
-        loginButton.setPreferredSize(new Dimension(100, 35));
-        cancelButton.setPreferredSize(new Dimension(100, 35));
-        loginButton.setBackground(new Color(0, 120, 215));
+        loginButton.setPreferredSize(new Dimension(120, 36));
+        cancelButton.setPreferredSize(new Dimension(120, 36));
+        loginButton.putClientProperty("JButton.buttonType", "roundRect");
+        cancelButton.putClientProperty("JButton.buttonType", "roundRect");
+        loginButton.putClientProperty("JComponent.roundRect", true);
+        cancelButton.putClientProperty("JComponent.roundRect", true);
+        loginButton.putClientProperty("JButton.focusedBackground", new Color(0,122,255));
+        loginButton.setBackground(new Color(0,122,255));
         loginButton.setForeground(Color.WHITE);
         loginButton.setFocusPainted(false);
         cancelButton.setFocusPainted(false);
 
         // Set field properties
-        usernameField.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(Color.GRAY),
-            BorderFactory.createEmptyBorder(5, 10, 5, 10)
-        ));
-        passwordField.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(Color.GRAY),
-            BorderFactory.createEmptyBorder(5, 10, 5, 10)
-        ));
+        usernameField.putClientProperty("JComponent.roundRect", true);
+        passwordField.putClientProperty("JComponent.roundRect", true);
+        usernameField.putClientProperty("JTextComponent.showClearButton", true);
+        passwordField.putClientProperty("JTextComponent.showClearButton", true);
     }
 
     private void setupLayout() {
