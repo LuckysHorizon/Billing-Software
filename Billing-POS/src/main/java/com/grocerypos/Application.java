@@ -5,6 +5,7 @@ import com.grocerypos.ui.components.GlassSidebar;
 import com.grocerypos.ui.components.MacTopBar;
 import com.grocerypos.database.DBUtil;
 import com.grocerypos.ui.panels.*;
+import com.grocerypos.ui.BillingWindow;
 import com.grocerypos.ui.components.ToastNotification;
 import com.grocerypos.util.SessionManager;
 import com.grocerypos.util.ThemeManager;
@@ -28,7 +29,7 @@ public class Application extends JFrame {
     // Panels
     private LoginPanel loginPanel;
     private AdminPanel adminPanel;
-    private CashierPanel cashierPanel;
+    private BillingWindow billingWindow;
     private ReportsPanel reportsPanel;
     private DashboardPanel dashboardPanel;
     private SettingsPanel settingsPanel;
@@ -73,7 +74,7 @@ public class Application extends JFrame {
         // Initialize panels
         loginPanel = new LoginPanel(this);
         adminPanel = new AdminPanel(this);
-        cashierPanel = new CashierPanel(this);
+        billingWindow = new BillingWindow();
         reportsPanel = new ReportsPanel(this);
         dashboardPanel = new DashboardPanel(this);
         settingsPanel = new SettingsPanel(this);
@@ -82,7 +83,7 @@ public class Application extends JFrame {
         mainPanel.add(loginPanel, "LOGIN");
         mainPanel.add(dashboardPanel, "DASHBOARD");
         mainPanel.add(adminPanel, "ADMIN");
-        mainPanel.add(cashierPanel, "CASHIER");
+        mainPanel.add(billingWindow, "CASHIER");
         mainPanel.add(reportsPanel, "REPORTS");
         mainPanel.add(settingsPanel, "SETTINGS");
         
@@ -201,8 +202,8 @@ public class Application extends JFrame {
 
     public void showCashierPanel() {
         cardLayout.show(mainPanel, "CASHIER");
-        cashierPanel.refreshData();
-        setTitle("Grocery POS System - Cashier Panel");
+        billingWindow.setVisible(true);
+        setTitle("Grocery POS System - Modern Billing");
     }
 
     public void showReportsPanel() {

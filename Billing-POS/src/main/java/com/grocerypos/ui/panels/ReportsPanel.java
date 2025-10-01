@@ -6,10 +6,10 @@ import com.grocerypos.dao.ItemDAO;
 import com.grocerypos.model.Bill;
 
 import javax.swing.*;
+import com.grocerypos.ui.components.GlassCard;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+// removed unused AWT event imports
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -65,9 +65,10 @@ public class ReportsPanel extends JPanel {
             }
         };
         salesTable = new JTable(salesModel);
-        salesTable.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
-        salesTable.setRowHeight(25);
-        salesTable.setGridColor(Color.LIGHT_GRAY);
+        salesTable.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 13));
+        salesTable.setRowHeight(26);
+        salesTable.putClientProperty("JTable.showGrid", false);
+        salesTable.putClientProperty("JTable.alternateRowColor", new Color(246,246,248));
         
         // Stock table
         String[] stockColumns = {"Name", "Barcode", "Stock", "Min Stock", "Status", "Category"};
@@ -78,9 +79,10 @@ public class ReportsPanel extends JPanel {
             }
         };
         stockTable = new JTable(stockModel);
-        stockTable.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
-        stockTable.setRowHeight(25);
-        stockTable.setGridColor(Color.LIGHT_GRAY);
+        stockTable.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 13));
+        stockTable.setRowHeight(26);
+        stockTable.putClientProperty("JTable.showGrid", false);
+        stockTable.putClientProperty("JTable.alternateRowColor", new Color(246,246,248));
         
         // Date pickers
         startDatePicker = new JDatePicker();
@@ -88,14 +90,12 @@ public class ReportsPanel extends JPanel {
         
         generateReportButton = new JButton("Generate Report");
         exportButton = new JButton("Export to CSV");
-        
-        generateReportButton.setBackground(new Color(0, 120, 215));
+        generateReportButton.putClientProperty("JButton.buttonType", "roundRect");
+        exportButton.putClientProperty("JButton.buttonType", "roundRect");
+        generateReportButton.setBackground(new Color(0,122,255));
         generateReportButton.setForeground(Color.WHITE);
-        generateReportButton.setFocusPainted(false);
-        
-        exportButton.setBackground(new Color(40, 167, 69));
+        exportButton.setBackground(new Color(108,117,125));
         exportButton.setForeground(Color.WHITE);
-        exportButton.setFocusPainted(false);
         
         totalSalesLabel = new JLabel("Total Sales: ₹0.00");
         totalBillsLabel = new JLabel("Total Bills: 0");
@@ -140,27 +140,23 @@ public class ReportsPanel extends JPanel {
     }
 
     private JPanel createSalesPanel() {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(Color.WHITE);
-        
+        GlassCard card = new GlassCard();
+        card.setLayout(new BorderLayout());
         JScrollPane scrollPane = new JScrollPane(salesTable);
         scrollPane.setPreferredSize(new Dimension(900, 400));
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
-        
-        panel.add(scrollPane, BorderLayout.CENTER);
-        return panel;
+        card.add(scrollPane, BorderLayout.CENTER);
+        return card;
     }
 
     private JPanel createStockPanel() {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(Color.WHITE);
-        
+        GlassCard card = new GlassCard();
+        card.setLayout(new BorderLayout());
         JScrollPane scrollPane = new JScrollPane(stockTable);
         scrollPane.setPreferredSize(new Dimension(900, 400));
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
-        
-        panel.add(scrollPane, BorderLayout.CENTER);
-        return panel;
+        card.add(scrollPane, BorderLayout.CENTER);
+        return card;
     }
 
     private void setupEventHandlers() {

@@ -8,8 +8,7 @@ import com.grocerypos.model.Item;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.CategoryAxis;
-import org.jfree.chart.axis.NumberAxis;
+// removed unused imports
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.BarRenderer;
@@ -18,6 +17,7 @@ import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
 
 import javax.swing.*;
+import com.grocerypos.ui.components.GlassCard;
 import java.awt.*;
 import java.math.BigDecimal;
 import java.sql.SQLException;
@@ -25,13 +25,13 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+// removed unused imports
 
 /**
  * Dashboard panel with charts and analytics
  */
 public class DashboardPanel extends JPanel {
+    @SuppressWarnings("unused")
     private Application parent;
     private BillDAO billDAO;
     private ItemDAO itemDAO;
@@ -86,17 +86,17 @@ public class DashboardPanel extends JPanel {
         add(summaryPanel, BorderLayout.NORTH);
         
         // Center panel - Charts
-        chartsPanel = new JPanel(new GridLayout(2, 2, 10, 10));
-        chartsPanel.setBackground(Color.WHITE);
-        chartsPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        chartsPanel = new JPanel(new GridLayout(2, 2, 12, 12));
+        chartsPanel.setBackground(new Color(245,245,247));
+        chartsPanel.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
         
         add(chartsPanel, BorderLayout.CENTER);
     }
     
     private JPanel createSummaryPanel() {
-        JPanel panel = new JPanel(new GridLayout(1, 4, 10, 10));
-        panel.setBackground(Color.WHITE);
-        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        JPanel panel = new JPanel(new GridLayout(1, 4, 12, 12));
+        panel.setBackground(new Color(245,245,247));
+        panel.setBorder(BorderFactory.createEmptyBorder(12, 12, 0, 12));
         
         // Create summary cards
         panel.add(createSummaryCard("💰", totalSalesLabel, "Total Sales", new Color(34, 197, 94)));
@@ -108,12 +108,8 @@ public class DashboardPanel extends JPanel {
     }
     
     private JPanel createSummaryCard(String icon, JLabel valueLabel, String title, Color color) {
-        JPanel card = new JPanel(new BorderLayout(5, 5));
-        card.setBackground(Color.WHITE);
-        card.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(color, 2),
-            BorderFactory.createEmptyBorder(15, 15, 15, 15)
-        ));
+        GlassCard card = new GlassCard();
+        card.setLayout(new BorderLayout(8, 8));
         
         JLabel iconLabel = new JLabel(icon);
         iconLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 24));
@@ -193,22 +189,36 @@ public class DashboardPanel extends JPanel {
         
         // Sales trend chart
         ChartPanel salesChart = createSalesTrendChart();
-        chartsPanel.add(salesChart);
+        chartsPanel.add(wrapChart("Sales Trend", salesChart));
         
         // Top products chart
         ChartPanel productsChart = createTopProductsChart();
-        chartsPanel.add(productsChart);
+        chartsPanel.add(wrapChart("Top Products", productsChart));
         
         // Stock status pie chart
         ChartPanel stockChart = createStockStatusChart();
-        chartsPanel.add(stockChart);
+        chartsPanel.add(wrapChart("Stock Status", stockChart));
         
         // Payment methods chart
         ChartPanel paymentChart = createPaymentMethodsChart();
-        chartsPanel.add(paymentChart);
+        chartsPanel.add(wrapChart("Payment Methods", paymentChart));
         
         chartsPanel.revalidate();
         chartsPanel.repaint();
+    }
+
+    private JPanel wrapChart(String title, ChartPanel chartPanel) {
+        GlassCard card = new GlassCard();
+        card.setLayout(new BorderLayout());
+        JLabel titleLabel = new JLabel(title);
+        titleLabel.setBorder(BorderFactory.createEmptyBorder(8, 10, 0, 10));
+        titleLabel.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 13));
+        titleLabel.setForeground(new Color(80, 80, 80));
+        card.add(titleLabel, BorderLayout.NORTH);
+        chartPanel.setOpaque(false);
+        chartPanel.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
+        card.add(chartPanel, BorderLayout.CENTER);
+        return card;
     }
     
     private ChartPanel createSalesTrendChart() throws SQLException {
@@ -246,8 +256,8 @@ public class DashboardPanel extends JPanel {
         plot.setRangeGridlinePaint(Color.LIGHT_GRAY);
         
         LineAndShapeRenderer renderer = (LineAndShapeRenderer) plot.getRenderer();
-        renderer.setSeriesPaint(0, new Color(59, 130, 246));
-        renderer.setSeriesStroke(0, new BasicStroke(3.0f));
+        renderer.setSeriesPaint(0, new Color(52, 120, 246));
+        renderer.setSeriesStroke(0, new BasicStroke(2.0f));
         
         return new ChartPanel(chart);
     }
@@ -279,13 +289,15 @@ public class DashboardPanel extends JPanel {
         plot.setRangeGridlinePaint(Color.LIGHT_GRAY);
         
         BarRenderer renderer = (BarRenderer) plot.getRenderer();
-        renderer.setSeriesPaint(0, new Color(34, 197, 94));
+        renderer.setSeriesPaint(0, new Color(102, 212, 133));
+        renderer.setBarPainter(new org.jfree.chart.renderer.category.StandardBarPainter());
+        renderer.setShadowVisible(false);
         
         return new ChartPanel(chart);
     }
     
     private ChartPanel createStockStatusChart() throws SQLException {
-        DefaultPieDataset dataset = new DefaultPieDataset();
+        DefaultPieDataset<String> dataset = new DefaultPieDataset<>();
         
         List<Item> allItems = itemDAO.findAll();
         List<Item> lowStockItems = itemDAO.findLowStockItems();
@@ -335,7 +347,9 @@ public class DashboardPanel extends JPanel {
         plot.setRangeGridlinePaint(Color.LIGHT_GRAY);
         
         BarRenderer renderer = (BarRenderer) plot.getRenderer();
-        renderer.setSeriesPaint(0, new Color(168, 85, 247));
+        renderer.setSeriesPaint(0, new Color(150, 110, 245));
+        renderer.setBarPainter(new org.jfree.chart.renderer.category.StandardBarPainter());
+        renderer.setShadowVisible(false);
         
         return new ChartPanel(chart);
     }

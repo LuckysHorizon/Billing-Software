@@ -8,11 +8,11 @@ import com.grocerypos.model.Bill;
 import com.grocerypos.model.BillItem;
 import com.grocerypos.model.InventoryMovement;
 import com.grocerypos.util.SessionManager;
+import com.grocerypos.ui.components.*;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-// removed unused ActionEvent/ActionListener imports
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.math.BigDecimal;
@@ -23,27 +23,32 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Billing window for POS operations
+ * Modern futuristic macOS-inspired billing panel with glass morphism effects
  */
-public class BillingWindow extends JFrame {
-    private JTextField barcodeField;
-    private JTextField searchField;
-    private JTable cartTable;
+public class BillingWindow extends JPanel {
+    // Modern components
+    private ModernSearchField barcodeField;
+    private ModernSearchField searchField;
+    private ModernTable cartTable;
     private DefaultTableModel cartModel;
-    private JLabel totalLabel;
-    private JLabel gstLabel;
-    private JLabel finalTotalLabel;
-    private JButton addItemButton;
-    private JButton removeItemButton;
-    private JButton checkoutButton;
-    private JButton clearCartButton;
-    private JButton printReceiptButton;
+    private InvoiceSummaryCard summaryCard;
+    private ProductSidebar productSidebar;
     
+    // Action buttons
+    private ModernButton addItemButton;
+    private ModernButton removeItemButton;
+    private ModernButton clearCartButton;
+    private ModernButton printReceiptButton;
+    private ModernButton discountButton;
+    
+    // Data
     private List<BillItem> cartItems;
     private BigDecimal subtotal;
     private BigDecimal gstAmount;
     private BigDecimal finalTotal;
+    private BigDecimal discountPercent = BigDecimal.ZERO;
     
+    // DAOs
     private ItemDAO itemDAO;
     private BillDAO billDAO;
     private InventoryMovementDAO inventoryMovementDAO;
@@ -66,7 +71,7 @@ public class BillingWindow extends JFrame {
             billDAO = new BillDAO();
             inventoryMovementDAO = new InventoryMovementDAO();
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Database connection error: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            ToastNotification.showError(SwingUtilities.getWindowAncestor(this), "Database connection error: " + e.getMessage());
         }
         
         generateNewBillNumber();
@@ -74,17 +79,11 @@ public class BillingWindow extends JFrame {
     }
 
     private void initializeComponents() {
-        // Barcode input
-        barcodeField = new JTextField(20);
-        barcodeField.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 16));
-        barcodeField.setToolTipText("Scan barcode or enter item code");
+        // Modern search fields
+        barcodeField = new ModernSearchField("Scan barcode or enter code");
+        searchField = new ModernSearchField("Search products");
         
-        // Search field
-        searchField = new JTextField(20);
-        searchField.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
-        searchField.setToolTipText("Search items by name");
-        
-        // Cart table
+        // Cart table with modern styling
         String[] columnNames = {"Item", "Barcode", "Qty", "Price", "GST%", "GST Amt", "Total"};
         cartModel = new DefaultTableModel(columnNames, 0) {
             @Override
@@ -92,134 +91,102 @@ public class BillingWindow extends JFrame {
                 return column == 2; // Only quantity is editable
             }
         };
-        cartTable = new JTable(cartModel);
-        cartTable.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 13));
-        cartTable.setRowHeight(28);
-        cartTable.putClientProperty("JTable.showGrid", false);
-        cartTable.putClientProperty("JTable.alternateRowColor", new Color(246, 246, 248));
-        cartTable.getTableHeader().putClientProperty("FlatLaf.style", "font: medium 13");
+        cartTable = new ModernTable(cartModel);
+        
+        // Set column widths
         cartTable.getColumnModel().getColumn(0).setPreferredWidth(200);
         cartTable.getColumnModel().getColumn(1).setPreferredWidth(120);
-        cartTable.getColumnModel().getColumn(2).setPreferredWidth(50);
+        cartTable.getColumnModel().getColumn(2).setPreferredWidth(60);
         cartTable.getColumnModel().getColumn(3).setPreferredWidth(80);
         cartTable.getColumnModel().getColumn(4).setPreferredWidth(60);
         cartTable.getColumnModel().getColumn(5).setPreferredWidth(80);
         cartTable.getColumnModel().getColumn(6).setPreferredWidth(100);
         
-        // Buttons
-        addItemButton = new JButton("Add Item");
-        removeItemButton = new JButton("Remove");
-        checkoutButton = new JButton("Checkout");
-        clearCartButton = new JButton("Clear Cart");
-        printReceiptButton = new JButton("Print Receipt");
+        // Modern buttons
+        addItemButton = new ModernButton("Add Item", new Color(0, 122, 255));
+        removeItemButton = new ModernButton("Remove", new Color(220, 53, 69));
+        clearCartButton = new ModernButton("Clear Cart", new Color(108, 117, 125));
+        printReceiptButton = new ModernButton("Print Receipt", new Color(23, 162, 184));
+        discountButton = new ModernButton("% Discount", new Color(255, 193, 7));
+        discountButton.setForeground(new Color(50, 50, 50));
         
-        // Configure buttons
-        addItemButton.putClientProperty("JButton.buttonType", "roundRect");
-        addItemButton.setBackground(new Color(0,122,255));
-        addItemButton.setForeground(Color.WHITE);
-        addItemButton.setFocusPainted(false);
-        
-        checkoutButton.putClientProperty("JButton.buttonType", "roundRect");
-        checkoutButton.setBackground(new Color(0,122,255));
-        checkoutButton.setForeground(Color.WHITE);
-        checkoutButton.setFocusPainted(false);
-        checkoutButton.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
-        
-        removeItemButton.putClientProperty("JButton.buttonType", "roundRect");
-        removeItemButton.setBackground(new Color(220, 53, 69));
-        removeItemButton.setForeground(Color.WHITE);
-        removeItemButton.setFocusPainted(false);
-        
-        clearCartButton.putClientProperty("JButton.buttonType", "roundRect");
-        clearCartButton.setBackground(new Color(108, 117, 125));
-        clearCartButton.setForeground(Color.WHITE);
-        clearCartButton.setFocusPainted(false);
-        
-        printReceiptButton.putClientProperty("JButton.buttonType", "roundRect");
-        printReceiptButton.setBackground(new Color(23, 162, 184));
-        printReceiptButton.setForeground(Color.WHITE);
-        printReceiptButton.setFocusPainted(false);
-        
-        // Total labels
-        totalLabel = new JLabel("Subtotal: ₹0.00");
-        gstLabel = new JLabel("GST: ₹0.00");
-        finalTotalLabel = new JLabel("Total: ₹0.00");
-        
-        totalLabel.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
-        gstLabel.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
-        finalTotalLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
-        finalTotalLabel.setForeground(new Color(0, 120, 215));
+        // Modern components
+        summaryCard = new InvoiceSummaryCard();
+        productSidebar = new ProductSidebar();
     }
 
     private void setupLayout() {
-        setLayout(new BorderLayout(10, 10));
+        setLayout(new BorderLayout(16, 16));
+        setBackground(new Color(240, 242, 247));
         
-        // Top panel - Input area
-        JPanel topPanel = new JPanel(new BorderLayout(10, 10));
-        topPanel.setBorder(BorderFactory.createTitledBorder("Item Entry"));
+        // Top panel - Search and input area
+        GlassCard topCard = new GlassCard();
+        topCard.setLayout(new BorderLayout(16, 16));
         
-        JPanel inputPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
-        inputPanel.add(new JLabel("Barcode:"));
-        inputPanel.add(barcodeField);
-        inputPanel.add(new JLabel("Search:"));
-        inputPanel.add(searchField);
+        JPanel inputPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 16, 16));
+        inputPanel.setOpaque(false);
+        
+        // Barcode input with icon
+        JPanel barcodePanel = createInputPanel("🔖", barcodeField);
+        JPanel searchPanel = createInputPanel("🔎", searchField);
+        
+        inputPanel.add(barcodePanel);
+        inputPanel.add(searchPanel);
         inputPanel.add(addItemButton);
+        inputPanel.add(discountButton);
         
-        topPanel.add(inputPanel, BorderLayout.CENTER);
-        add(topPanel, BorderLayout.NORTH);
+        topCard.add(inputPanel, BorderLayout.CENTER);
+        add(topCard, BorderLayout.NORTH);
         
-        // Center panel - Cart table
-        JPanel centerPanel = new JPanel(new BorderLayout());
-        centerPanel.setBorder(BorderFactory.createTitledBorder("Shopping Cart"));
+        // Center panel - Main content area
+        JPanel centerPanel = new JPanel(new BorderLayout(16, 16));
+        centerPanel.setOpaque(false);
         
+        // Left sidebar for quick product access
+        centerPanel.add(productSidebar, BorderLayout.WEST);
+        
+        // Main billing area
+        GlassCard billingCard = new GlassCard();
+        billingCard.setLayout(new BorderLayout(16, 16));
+        
+        // Cart table with modern styling
         JScrollPane scrollPane = new JScrollPane(cartTable);
-        scrollPane.setPreferredSize(new Dimension(800, 300));
+        scrollPane.setPreferredSize(new Dimension(600, 300));
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
-        scrollPane.getViewport().setBackground(Color.WHITE);
-        centerPanel.add(scrollPane, BorderLayout.CENTER);
+        scrollPane.setOpaque(false);
+        scrollPane.getViewport().setOpaque(false);
         
-        // Cart buttons
-        JPanel cartButtonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
+        billingCard.add(scrollPane, BorderLayout.CENTER);
+        
+        // Cart action buttons
+        JPanel cartButtonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 12));
+        cartButtonPanel.setOpaque(false);
         cartButtonPanel.add(removeItemButton);
         cartButtonPanel.add(clearCartButton);
-        centerPanel.add(cartButtonPanel, BorderLayout.SOUTH);
+        cartButtonPanel.add(printReceiptButton);
+        
+        billingCard.add(cartButtonPanel, BorderLayout.SOUTH);
+        
+        centerPanel.add(billingCard, BorderLayout.CENTER);
+        
+        // Right panel - Invoice summary
+        centerPanel.add(summaryCard, BorderLayout.EAST);
         
         add(centerPanel, BorderLayout.CENTER);
+    }
+
+    private JPanel createInputPanel(String icon, JComponent field) {
+        JPanel panel = new JPanel(new BorderLayout(8, 0));
+        panel.setOpaque(false);
         
-        // Bottom panel - Totals and checkout
-        JPanel bottomPanel = new JPanel(new BorderLayout(10, 10)) {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2 = (Graphics2D) g.create();
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                int w = getWidth();
-                int h = getHeight();
-                Color base = new Color(255,255,255,200);
-                g2.setColor(base);
-                g2.fillRoundRect(0, 0, w, h, 16, 16);
-                g2.setColor(new Color(0,0,0,25));
-                g2.drawRoundRect(0, 0, w-1, h-1, 16, 16);
-                g2.dispose();
-                super.paintComponent(g);
-            }
-        };
-        bottomPanel.setOpaque(false);
+        JLabel iconLabel = new JLabel(icon);
+        iconLabel.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 16));
+        iconLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 8));
         
-        // Totals panel
-        JPanel totalsPanel = new JPanel(new GridLayout(3, 1, 5, 5));
-        totalsPanel.add(totalLabel);
-        totalsPanel.add(gstLabel);
-        totalsPanel.add(finalTotalLabel);
+        panel.add(iconLabel, BorderLayout.WEST);
+        panel.add(field, BorderLayout.CENTER);
         
-        // Checkout panel
-        JPanel checkoutPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
-        checkoutPanel.add(printReceiptButton);
-        checkoutPanel.add(checkoutButton);
-        
-        bottomPanel.add(totalsPanel, BorderLayout.WEST);
-        bottomPanel.add(checkoutPanel, BorderLayout.EAST);
-        
-        add(bottomPanel, BorderLayout.SOUTH);
+        return panel;
     }
 
     private void setupEventHandlers() {
@@ -243,20 +210,12 @@ public class BillingWindow extends JFrame {
             }
         });
         
-        // Add item button
+        // Button actions
         addItemButton.addActionListener(e -> addItemByBarcode());
-        
-        // Remove item button
         removeItemButton.addActionListener(e -> removeSelectedItem());
-        
-        // Clear cart button
         clearCartButton.addActionListener(e -> clearCart());
-        
-        // Checkout button
-        checkoutButton.addActionListener(e -> processCheckout());
-        
-        // Print receipt button
         printReceiptButton.addActionListener(e -> printReceipt());
+        discountButton.addActionListener(e -> promptDiscount());
         
         // Cart table selection
         cartTable.getSelectionModel().addListSelectionListener(e -> {
@@ -271,17 +230,59 @@ public class BillingWindow extends JFrame {
                 updateItemQuantity(cartTable.getSelectedRow());
             }
         });
+        
+        // Summary card checkout
+        summaryCard.addCheckoutListener(e -> processCheckout());
+        
+        // Product sidebar listener
+        productSidebar.setListener(new ProductSidebar.ProductSidebarListener() {
+            @Override
+            public void onProductSelected(String productName) {
+                searchField.setText(productName);
+                searchAndAddItem();
+            }
+            
+            @Override
+            public void onCategorySelected(String category) {
+                // Could implement category filtering here
+            }
+        });
+        
+        // Keyboard shortcuts
+        setupKeyboardShortcuts();
+    }
+
+    private void setupKeyboardShortcuts() {
+        // Get the root pane from the parent window
+        JRootPane rootPane = SwingUtilities.getRootPane(this);
+        if (rootPane != null) {
+            rootPane.registerKeyboardAction(e -> barcodeField.requestFocus(),
+                KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0),
+                JComponent.WHEN_IN_FOCUSED_WINDOW);
+            
+            rootPane.registerKeyboardAction(e -> searchField.requestFocus(),
+                KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0),
+                JComponent.WHEN_IN_FOCUSED_WINDOW);
+            
+            rootPane.registerKeyboardAction(e -> processCheckout(),
+                KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0),
+                JComponent.WHEN_IN_FOCUSED_WINDOW);
+            
+            rootPane.registerKeyboardAction(e -> clearCart(),
+                KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0),
+                JComponent.WHEN_IN_FOCUSED_WINDOW);
+        }
     }
 
     private void setupWindow() {
-        setTitle("Grocery POS - Billing");
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setSize(1000, 700);
-        setLocationRelativeTo(null);
-        setMinimumSize(new Dimension(800, 600));
+        // Apply glass effect to the entire panel
+        setBackground(new Color(240, 242, 247));
+        
+        // Add smooth animations
+        AnimationUtils.fadeIn(this, 300);
         
         // Set focus to barcode field
-        barcodeField.requestFocus();
+        SwingUtilities.invokeLater(() -> barcodeField.requestFocus());
     }
 
     private void generateNewBillNumber() {
@@ -291,7 +292,7 @@ public class BillingWindow extends JFrame {
     private void addItemByBarcode() {
         String barcode = barcodeField.getText().trim();
         if (barcode.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Please enter a barcode", "Input Required", JOptionPane.WARNING_MESSAGE);
+            ToastNotification.showWarning(SwingUtilities.getWindowAncestor(this), "Please enter a barcode");
             return;
         }
         
@@ -301,37 +302,38 @@ public class BillingWindow extends JFrame {
                 addItemToCart(item, 1);
                 barcodeField.setText("");
                 barcodeField.requestFocus();
+                ToastNotification.showSuccess(SwingUtilities.getWindowAncestor(this), "Item added: " + item.getName());
             } else {
-                JOptionPane.showMessageDialog(this, "Item not found with barcode: " + barcode, "Item Not Found", JOptionPane.WARNING_MESSAGE);
+                ToastNotification.showWarning(SwingUtilities.getWindowAncestor(this), "Item not found with barcode: " + barcode);
                 barcodeField.setText("");
                 barcodeField.requestFocus();
             }
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Database error: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            ToastNotification.showError(SwingUtilities.getWindowAncestor(this), "Database error: " + e.getMessage());
         }
     }
 
     private void searchAndAddItem() {
         String searchTerm = searchField.getText().trim();
         if (searchTerm.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Please enter a search term", "Input Required", JOptionPane.WARNING_MESSAGE);
+            ToastNotification.showWarning(SwingUtilities.getWindowAncestor(this), "Please enter a search term");
             return;
         }
         
         try {
             List<Item> items = itemDAO.searchByName(searchTerm);
             if (items.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "No items found matching: " + searchTerm, "No Results", JOptionPane.INFORMATION_MESSAGE);
+                ToastNotification.showInfo(SwingUtilities.getWindowAncestor(this), "No items found matching: " + searchTerm);
             } else if (items.size() == 1) {
                 addItemToCart(items.get(0), 1);
                 searchField.setText("");
                 searchField.requestFocus();
+                ToastNotification.showSuccess(SwingUtilities.getWindowAncestor(this), "Item added: " + items.get(0).getName());
             } else {
-                // Show item selection dialog
                 showItemSelectionDialog(items);
             }
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Database error: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            ToastNotification.showError(SwingUtilities.getWindowAncestor(this), "Database error: " + e.getMessage());
         }
     }
 
@@ -347,7 +349,7 @@ public class BillingWindow extends JFrame {
             data[i][3] = item.getStockQuantity();
         }
         
-        JTable selectionTable = new JTable(data, columnNames);
+        ModernTable selectionTable = new ModernTable(new DefaultTableModel(data, columnNames));
         selectionTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         
         JScrollPane scrollPane = new JScrollPane(selectionTable);
@@ -360,13 +362,14 @@ public class BillingWindow extends JFrame {
                 addItemToCart(items.get(selectedRow), 1);
                 searchField.setText("");
                 searchField.requestFocus();
+                ToastNotification.showSuccess(SwingUtilities.getWindowAncestor(this), "Item added: " + items.get(selectedRow).getName());
             }
         }
     }
 
     private void addItemToCart(Item item, int quantity) {
         if (item.getStockQuantity() < quantity) {
-            JOptionPane.showMessageDialog(this, "Insufficient stock. Available: " + item.getStockQuantity(), "Stock Error", JOptionPane.WARNING_MESSAGE);
+            ToastNotification.showWarning(SwingUtilities.getWindowAncestor(this), "Insufficient stock. Available: " + item.getStockQuantity());
             return;
         }
         
@@ -421,7 +424,7 @@ public class BillingWindow extends JFrame {
                     updateTotals();
                 }
             } catch (NumberFormatException e) {
-                JOptionPane.showMessageDialog(this, "Invalid quantity", "Input Error", JOptionPane.ERROR_MESSAGE);
+                ToastNotification.showError(SwingUtilities.getWindowAncestor(this), "Invalid quantity");
                 updateCartTable(); // Refresh table
             }
         }
@@ -433,15 +436,18 @@ public class BillingWindow extends JFrame {
             cartItems.remove(selectedRow);
             updateCartTable();
             updateTotals();
+            ToastNotification.showInfo(SwingUtilities.getWindowAncestor(this), "Item removed from cart");
         }
     }
 
     private void clearCart() {
-        int result = JOptionPane.showConfirmDialog(this, "Are you sure you want to clear the cart?", "Clear Cart", JOptionPane.YES_NO_OPTION);
+        int result = JOptionPane.showConfirmDialog(this, "Are you sure you want to clear the cart?", 
+            "Clear Cart", JOptionPane.YES_NO_OPTION);
         if (result == JOptionPane.YES_OPTION) {
             cartItems.clear();
             updateCartTable();
             updateTotals();
+            ToastNotification.showInfo(SwingUtilities.getWindowAncestor(this), "Cart cleared");
         }
     }
 
@@ -454,21 +460,43 @@ public class BillingWindow extends JFrame {
             gstAmount = gstAmount.add(item.getGstAmount());
         }
         
-        finalTotal = subtotal.add(gstAmount);
+        BigDecimal gross = subtotal.add(gstAmount);
+        BigDecimal discountAmount = gross.multiply(discountPercent).divide(new BigDecimal("100"));
+        finalTotal = gross.subtract(discountAmount);
         
-        totalLabel.setText("Subtotal: ₹" + String.format("%.2f", subtotal));
-        gstLabel.setText("GST: ₹" + String.format("%.2f", gstAmount));
-        finalTotalLabel.setText("Total: ₹" + String.format("%.2f", finalTotal));
+        // Update summary card
+        summaryCard.updateSummary(subtotal, gstAmount, discountPercent, finalTotal, cartItems.size());
+        summaryCard.setCheckoutEnabled(!cartItems.isEmpty());
+    }
+
+    private void promptDiscount() {
+        String input = JOptionPane.showInputDialog(this, "Enter discount % (0-100):", 
+            discountPercent.toPlainString());
+        if (input == null) return;
+        
+        try {
+            BigDecimal v = new BigDecimal(input.trim());
+            if (v.compareTo(BigDecimal.ZERO) < 0 || v.compareTo(new BigDecimal("100")) > 0) {
+                ToastNotification.showWarning(SwingUtilities.getWindowAncestor(this), "Discount must be between 0 and 100");
+                return;
+            }
+            discountPercent = v;
+            updateTotals();
+            ToastNotification.showSuccess(SwingUtilities.getWindowAncestor(this), "Discount applied: " + v + "%");
+        } catch (NumberFormatException ex) {
+            ToastNotification.showError(SwingUtilities.getWindowAncestor(this), "Invalid number");
+        }
     }
 
     private void processCheckout() {
         if (cartItems.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Cart is empty", "No Items", JOptionPane.WARNING_MESSAGE);
+            ToastNotification.showWarning(SwingUtilities.getWindowAncestor(this), "Cart is empty");
             return;
         }
         
         // Show payment dialog
-        PaymentDialog paymentDialog = new PaymentDialog(this, finalTotal);
+        Window parentWindow = SwingUtilities.getWindowAncestor(this);
+        PaymentDialog paymentDialog = new PaymentDialog(parentWindow instanceof JFrame ? (JFrame) parentWindow : null, finalTotal);
         paymentDialog.setVisible(true);
         
         if (paymentDialog.isPaymentSuccessful()) {
@@ -509,7 +537,7 @@ public class BillingWindow extends JFrame {
                     }
                 }
                 
-                JOptionPane.showMessageDialog(this, "Bill processed successfully!\nBill Number: " + currentBillNumber, "Success", JOptionPane.INFORMATION_MESSAGE);
+                ToastNotification.showSuccess(SwingUtilities.getWindowAncestor(this), "Bill processed successfully!\nBill Number: " + currentBillNumber);
                 
                 // Clear cart and generate new bill number
                 cartItems.clear();
@@ -518,14 +546,14 @@ public class BillingWindow extends JFrame {
                 generateNewBillNumber();
                 
             } catch (SQLException e) {
-                JOptionPane.showMessageDialog(this, "Error processing bill: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                ToastNotification.showError(SwingUtilities.getWindowAncestor(this), "Error processing bill: " + e.getMessage());
             }
         }
     }
 
     private void printReceipt() {
         if (cartItems.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Cart is empty", "No Items", JOptionPane.WARNING_MESSAGE);
+            ToastNotification.showWarning(SwingUtilities.getWindowAncestor(this), "Cart is empty");
             return;
         }
         

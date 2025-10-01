@@ -1,5 +1,6 @@
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\model\Item.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\model\Bill.java
+D:\Projects\Billing-POS\src\main\java\com\grocerypos\util\BillingUITest.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\util\PasswordUtil.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\ui\LoginFrame.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\ui\panels\DashboardPanel.java
@@ -16,9 +17,11 @@ D:\Projects\Billing-POS\src\main\java\com\grocerypos\model\BillItem.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\util\GeneratePasswords.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\dao\BillDAO.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\ui\ReportsWindow.java
+D:\Projects\Billing-POS\src\main\java\com\grocerypos\ui\components\InvoiceSummaryCard.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\ui\panels\ReportsPanel.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\dao\ItemDAO.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\dao\UserDAO.java
+D:\Projects\Billing-POS\src\main\java\com\grocerypos\ui\components\ModernButton.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\Application.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\util\ResetDatabase.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\ui\MainWindow.java
@@ -26,12 +29,17 @@ D:\Projects\Billing-POS\src\main\java\com\grocerypos\ui\panels\ItemDialog.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\ui\ItemDialog.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\util\SessionManager.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\model\InventoryMovement.java
+D:\Projects\Billing-POS\src\main\java\com\grocerypos\ui\components\ModernSearchField.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\Main.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\model\User.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\database\DBUtil.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\ui\panels\AdminPanel.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\ui\panels\CashierPanel.java
+D:\Projects\Billing-POS\src\main\java\com\grocerypos\ui\components\ProductSidebar.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\util\ThemeManager.java
+D:\Projects\Billing-POS\src\main\java\com\grocerypos\ui\components\ModernTable.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\ui\components\ToastNotification.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\ui\panels\PaymentDialog.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\util\TestLogin.java
+D:\Projects\Billing-POS\src\main\java\com\grocerypos\ui\components\AnimationUtils.java
+D:\Projects\Billing-POS\src\main\java\com\grocerypos\ui\components\GlassCard.java

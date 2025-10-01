@@ -93,11 +93,10 @@ public class ToastNotification extends JWindow {
         container.setBorder(BorderFactory.createEmptyBorder(10, 14, 10, 10));
         container.add(iconLabel, BorderLayout.WEST);
         container.add(messageLabel, BorderLayout.CENTER);
-        JButton closeBtn = (JButton)((BorderLayout)getLayout()).getLayoutComponent(BorderLayout.EAST);
-        // In case we want to re-add close, but keep minimal for macOS look
-        remove(closeBtn);
-        setLayout(new BorderLayout());
-        add(container, BorderLayout.CENTER);
+        // Build content safely; avoid removing components from JWindow directly
+        getContentPane().removeAll();
+        getContentPane().setLayout(new BorderLayout());
+        getContentPane().add(container, BorderLayout.CENTER);
         pack();
         setLocationRelativeTo(getParent());
         if (getParent() != null) {

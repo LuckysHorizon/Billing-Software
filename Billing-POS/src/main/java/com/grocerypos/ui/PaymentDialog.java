@@ -1,25 +1,25 @@
 package com.grocerypos.ui;
 
 import com.grocerypos.model.Bill;
+import com.grocerypos.ui.components.*;
 
 import javax.swing.*;
 import java.awt.*;
-// removed unused ActionEvent/ActionListener imports
 import java.math.BigDecimal;
 
 /**
- * Payment dialog for checkout process
+ * Modern payment dialog with glass morphism effects and smooth animations
  */
 public class PaymentDialog extends JDialog {
     private JLabel totalLabel;
-    private JTextField amountReceivedField;
+    private ModernSearchField amountReceivedField;
     private JLabel changeLabel;
     private JComboBox<Bill.PaymentMethod> paymentMethodCombo;
     private JToggleButton cashToggle;
     private JToggleButton cardToggle;
     private JToggleButton upiToggle;
-    private JButton processButton;
-    private JButton cancelButton;
+    private ModernButton processButton;
+    private ModernButton cancelButton;
     
     private BigDecimal totalAmount;
     private boolean paymentSuccessful = false;
@@ -36,92 +36,112 @@ public class PaymentDialog extends JDialog {
     }
 
     private void initializeComponents() {
+        // Total amount label with modern styling
         totalLabel = new JLabel("Total Amount: ₹" + String.format("%.2f", totalAmount));
-        totalLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
-        totalLabel.setForeground(new Color(0, 120, 215));
+        totalLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 20));
+        totalLabel.setForeground(new Color(0, 122, 255));
+        totalLabel.setHorizontalAlignment(SwingConstants.CENTER);
         
-        amountReceivedField = new JTextField(15);
-        amountReceivedField.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
-        amountReceivedField.setToolTipText("Enter amount received from customer");
+        // Modern amount input field
+        amountReceivedField = new ModernSearchField("Enter amount received");
+        amountReceivedField.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 16));
         
+        // Change label
         changeLabel = new JLabel("Change: ₹0.00");
-        changeLabel.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
+        changeLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
+        changeLabel.setForeground(new Color(34, 197, 94));
+        changeLabel.setHorizontalAlignment(SwingConstants.CENTER);
         
+        // Payment method combo
         paymentMethodCombo = new JComboBox<>(Bill.PaymentMethod.values());
         paymentMethodCombo.setSelectedItem(Bill.PaymentMethod.CASH);
         paymentMethodCombo.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
 
-        // Segmented payment buttons
-        cashToggle = new JToggleButton("Cash");
-        cardToggle = new JToggleButton("Card");
-        upiToggle = new JToggleButton("UPI");
+        // Segmented payment buttons with modern styling
+        cashToggle = createSegmentedButton("Cash", true, false);
+        cardToggle = createSegmentedButton("Card", false, false);
+        upiToggle = createSegmentedButton("UPI", false, true);
+        
         ButtonGroup pmGroup = new ButtonGroup();
         pmGroup.add(cashToggle);
         pmGroup.add(cardToggle);
         pmGroup.add(upiToggle);
         cashToggle.setSelected(true);
-        styleSegment(cashToggle, true, false);
-        styleSegment(cardToggle, false, false);
-        styleSegment(upiToggle, false, true);
         
-        processButton = new JButton("Checkout");
-        processButton.putClientProperty("JButton.buttonType", "roundRect");
-        processButton.setBackground(new Color(0, 122, 255));
-        processButton.setForeground(Color.WHITE);
-        processButton.setFocusPainted(false);
-        processButton.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
+        // Modern action buttons
+        processButton = new ModernButton("Process Payment", new Color(34, 197, 94));
+        processButton.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
+        processButton.setPreferredSize(new Dimension(200, 50));
         
-        cancelButton = new JButton("Cancel");
-        cancelButton.setBackground(new Color(220, 53, 69));
-        cancelButton.setForeground(Color.WHITE);
-        cancelButton.setFocusPainted(false);
+        cancelButton = new ModernButton("Cancel", new Color(220, 53, 69));
+        cancelButton.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
+        cancelButton.setPreferredSize(new Dimension(120, 40));
+    }
+    
+    private JToggleButton createSegmentedButton(String text, boolean left, boolean right) {
+        JToggleButton button = new JToggleButton(text);
+        button.putClientProperty("JButton.buttonType", "segmented");
+        button.putClientProperty("JButton.segmentPosition", left ? "first" : right ? "last" : "middle");
+        button.setFocusPainted(false);
+        button.setBorder(BorderFactory.createEmptyBorder(8, 16, 8, 16));
+        button.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
+        return button;
     }
 
     private void setupLayout() {
-        setLayout(new BorderLayout(10, 10));
+        setLayout(new BorderLayout(20, 20));
+        setBackground(new Color(240, 242, 247));
         
-        // Main panel
-        JPanel mainPanel = new JPanel(new GridBagLayout());
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        // Main content panel with glass card
+        GlassCard mainCard = new GlassCard();
+        mainCard.setLayout(new GridBagLayout());
         
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10);
+        gbc.insets = new Insets(16, 16, 16, 16);
         
         // Total amount
         gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.CENTER;
-        mainPanel.add(totalLabel, gbc);
+        mainCard.add(totalLabel, gbc);
         
         // Payment method segmented control
         gbc.gridx = 0; gbc.gridy = 1; gbc.gridwidth = 1;
         gbc.anchor = GridBagConstraints.EAST;
-        mainPanel.add(new JLabel("Payment Method:"), gbc);
-        JPanel segmented = new JPanel(new GridLayout(1, 3, 1, 0));
+        JLabel paymentLabel = new JLabel("Payment Method:");
+        paymentLabel.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
+        paymentLabel.setForeground(new Color(100, 100, 100));
+        mainCard.add(paymentLabel, gbc);
+        
+        JPanel segmented = new JPanel(new GridLayout(1, 3, 2, 0));
         segmented.setOpaque(false);
         segmented.add(cashToggle);
         segmented.add(cardToggle);
         segmented.add(upiToggle);
         gbc.gridx = 1; gbc.anchor = GridBagConstraints.WEST;
-        mainPanel.add(segmented, gbc);
+        mainCard.add(segmented, gbc);
         
         // Amount received
         gbc.gridx = 0; gbc.gridy = 2; gbc.anchor = GridBagConstraints.EAST;
-        mainPanel.add(new JLabel("Amount Received:"), gbc);
+        JLabel amountLabel = new JLabel("Amount Received:");
+        amountLabel.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
+        amountLabel.setForeground(new Color(100, 100, 100));
+        mainCard.add(amountLabel, gbc);
         
         gbc.gridx = 1; gbc.anchor = GridBagConstraints.WEST;
-        mainPanel.add(amountReceivedField, gbc);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        mainCard.add(amountReceivedField, gbc);
         
         // Change
-        gbc.gridx = 0; gbc.gridy = 3; gbc.anchor = GridBagConstraints.EAST;
-        mainPanel.add(new JLabel("Change:"), gbc);
+        gbc.gridx = 0; gbc.gridy = 3; gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.fill = GridBagConstraints.NONE;
+        mainCard.add(changeLabel, gbc);
         
-        gbc.gridx = 1; gbc.anchor = GridBagConstraints.WEST;
-        mainPanel.add(changeLabel, gbc);
-        
-        add(mainPanel, BorderLayout.CENTER);
+        add(mainCard, BorderLayout.CENTER);
         
         // Button panel
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 16, 16));
+        buttonPanel.setOpaque(false);
         buttonPanel.add(cancelButton);
         buttonPanel.add(processButton);
         
@@ -180,13 +200,26 @@ public class PaymentDialog extends JDialog {
     }
 
     private void setupDialog() {
-        setSize(420, 320);
+        setSize(500, 400);
         setLocationRelativeTo(getParent());
         setResizable(false);
         setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         
+        // Apply glass effect
+        getRootPane().putClientProperty("JComponent.roundRect", true);
+        getRootPane().setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        
+        // Add smooth animations
+        AnimationUtils.fadeIn(this, 200);
+        
+        // Keyboard shortcuts
+        getRootPane().setDefaultButton(processButton);
+        getRootPane().registerKeyboardAction(e -> dispose(),
+            KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_ESCAPE, 0),
+            JComponent.WHEN_IN_FOCUSED_WINDOW);
+
         // Set focus to amount field
-        amountReceivedField.requestFocus();
+        SwingUtilities.invokeLater(() -> amountReceivedField.requestFocus());
     }
 
     private void updateChange() {
@@ -198,16 +231,26 @@ public class PaymentDialog extends JDialog {
                     BigDecimal change = amountReceived.subtract(totalAmount);
                     changeLabel.setText("Change: ₹" + String.format("%.2f", change));
                     processButton.setEnabled(amountReceived.compareTo(totalAmount) >= 0);
+                    
+                    // Color coding for change
+                    if (change.compareTo(BigDecimal.ZERO) >= 0) {
+                        changeLabel.setForeground(new Color(34, 197, 94)); // Green
+                    } else {
+                        changeLabel.setForeground(new Color(239, 68, 68)); // Red
+                    }
                 } else {
                     changeLabel.setText("Change: ₹0.00");
+                    changeLabel.setForeground(new Color(100, 100, 100));
                     processButton.setEnabled(false);
                 }
             } else {
                 changeLabel.setText("Change: ₹0.00");
+                changeLabel.setForeground(new Color(100, 100, 100));
                 processButton.setEnabled(true);
             }
         } catch (NumberFormatException e) {
             changeLabel.setText("Change: Invalid amount");
+            changeLabel.setForeground(new Color(239, 68, 68));
             processButton.setEnabled(false);
         }
     }
@@ -219,23 +262,30 @@ public class PaymentDialog extends JDialog {
             if (method == Bill.PaymentMethod.CASH) {
                 String amountText = amountReceivedField.getText().trim();
                 if (amountText.isEmpty()) {
-                    JOptionPane.showMessageDialog(this, "Please enter amount received", "Input Required", JOptionPane.WARNING_MESSAGE);
+                    ToastNotification.showWarning(this, "Please enter amount received");
                     return;
                 }
                 
                 BigDecimal amountReceived = new BigDecimal(amountText);
                 if (amountReceived.compareTo(totalAmount) < 0) {
-                    JOptionPane.showMessageDialog(this, "Amount received is less than total amount", "Insufficient Amount", JOptionPane.WARNING_MESSAGE);
+                    ToastNotification.showWarning(this, "Amount received is less than total amount");
                     return;
                 }
             }
             
             selectedPaymentMethod = method;
             paymentSuccessful = true;
-            dispose();
+            
+            // Show success animation
+            ToastNotification.showSuccess(this, "Payment processed successfully!");
+            
+            // Small delay before closing
+            Timer timer = new Timer(1000, e -> dispose());
+            timer.setRepeats(false);
+            timer.start();
             
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Invalid amount format", "Input Error", JOptionPane.ERROR_MESSAGE);
+            ToastNotification.showError(this, "Invalid amount format");
         }
     }
 
@@ -245,12 +295,5 @@ public class PaymentDialog extends JDialog {
 
     public Bill.PaymentMethod getPaymentMethod() {
         return selectedPaymentMethod;
-    }
-
-    private void styleSegment(AbstractButton b, boolean left, boolean right) {
-        b.putClientProperty("JButton.buttonType", "segmented");
-        b.putClientProperty("JButton.segmentPosition", left ? "first" : right ? "last" : "middle");
-        b.setFocusPainted(false);
-        b.setBorder(BorderFactory.createEmptyBorder(6, 10, 6, 10));
     }
 }
