@@ -25,6 +25,15 @@ public class AnimationUtils {
         }
         
         Window window = (Window) component;
+        // Opacity control requires undecorated windows; otherwise skip to avoid IllegalComponentStateException
+        if ((window instanceof Dialog && !((Dialog) window).isUndecorated()) ||
+            (window instanceof Frame && !((Frame) window).isUndecorated())) {
+            if (onComplete != null) {
+                // Run completion callback immediately for consistent behavior
+                onComplete.actionPerformed(null);
+            }
+            return;
+        }
         Timer timer = new Timer(16, null);
         final long startTime = System.currentTimeMillis();
         
@@ -71,6 +80,14 @@ public class AnimationUtils {
         }
         
         Window window = (Window) component;
+        // Skip opacity animation for decorated windows
+        if ((window instanceof Dialog && !((Dialog) window).isUndecorated()) ||
+            (window instanceof Frame && !((Frame) window).isUndecorated())) {
+            if (onComplete != null) {
+                onComplete.actionPerformed(null);
+            }
+            return;
+        }
         Timer timer = new Timer(16, null);
         final long startTime = System.currentTimeMillis();
         

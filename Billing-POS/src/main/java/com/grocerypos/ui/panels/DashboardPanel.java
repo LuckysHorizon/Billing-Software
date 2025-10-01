@@ -175,13 +175,24 @@ public class DashboardPanel extends JPanel {
     }
     
     private String findTopSellingProduct(List<Bill> bills) {
-        // This is a simplified version - in a real app, you'd analyze bill items
         if (bills.isEmpty()) {
             return "N/A";
         }
-        
-        // For demo purposes, return a placeholder
-        return "Sample Product";
+
+        java.util.Map<String, Integer> nameToQty = new java.util.HashMap<>();
+        for (Bill bill : bills) {
+            if (bill.getBillItems() == null) continue;
+            for (com.grocerypos.model.BillItem item : bill.getBillItems()) {
+                String name = item.getItemName();
+                if (name == null) continue;
+                nameToQty.put(name, nameToQty.getOrDefault(name, 0) + Math.max(0, item.getQuantity()));
+            }
+        }
+
+        return nameToQty.entrySet().stream()
+            .max(java.util.Map.Entry.comparingByValue())
+            .map(java.util.Map.Entry::getKey)
+            .orElse("N/A");
     }
     
     private void loadCharts() throws SQLException {
@@ -264,13 +275,35 @@ public class DashboardPanel extends JPanel {
     
     private ChartPanel createTopProductsChart() throws SQLException {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-        
-        // Sample data - in a real app, you'd get this from bill items
-        dataset.addValue(150, "Sales", "Product A");
-        dataset.addValue(120, "Sales", "Product B");
-        dataset.addValue(90, "Sales", "Product C");
-        dataset.addValue(75, "Sales", "Product D");
-        dataset.addValue(60, "Sales", "Product E");
+
+        // Calculate top selling products from the last 7 days
+        java.util.Map<String, Integer> nameToQty = new java.util.HashMap<>();
+        for (int i = 0; i < 7; i++) {
+            LocalDate date = LocalDate.now().minusDays(i);
+            List<Bill> dayBills = billDAO.findByDateRange(date.atStartOfDay(), date.atTime(23, 59, 59));
+            for (Bill bill : dayBills) {
+                if (bill.getBillItems() == null) continue;
+                for (com.grocerypos.model.BillItem item : bill.getBillItems()) {
+                    String name = item.getItemName();
+                    if (name == null) continue;
+                    nameToQty.put(name, nameToQty.getOrDefault(name, 0) + Math.max(0, item.getQuantity()));
+                }
+            }
+        }
+
+        // Take top 5
+        java.util.List<java.util.Map.Entry<String, Integer>> top = nameToQty.entrySet().stream()
+            .sorted((a, b) -> Integer.compare(b.getValue(), a.getValue()))
+            .limit(5)
+            .toList();
+
+        if (top.isEmpty()) {
+            dataset.addValue(0, "Sales", "No Data");
+        } else {
+            for (var e : top) {
+                dataset.addValue(e.getValue(), "Sales", e.getKey());
+            }
+        }
         
         JFreeChart chart = ChartFactory.createBarChart(
             "🏆 Top Selling Products",

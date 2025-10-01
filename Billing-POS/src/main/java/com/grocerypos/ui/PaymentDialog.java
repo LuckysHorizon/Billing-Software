@@ -209,7 +209,7 @@ public class PaymentDialog extends JDialog {
         getRootPane().putClientProperty("JComponent.roundRect", true);
         getRootPane().setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         
-        // Add smooth animations
+        // Add smooth animations (skip if decorated handled inside util)
         AnimationUtils.fadeIn(this, 200);
         
         // Keyboard shortcuts

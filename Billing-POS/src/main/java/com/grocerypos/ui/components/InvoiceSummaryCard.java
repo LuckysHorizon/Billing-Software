@@ -15,6 +15,7 @@ public class InvoiceSummaryCard extends GlassCard {
     private JLabel totalLabel;
     private JLabel itemCountLabel;
     private ModernButton checkoutButton;
+    private ModernButton discountEditButton;
     
     public InvoiceSummaryCard() {
         initializeComponents();
@@ -33,6 +34,11 @@ public class InvoiceSummaryCard extends GlassCard {
         checkoutButton = new ModernButton("Checkout");
         checkoutButton.setPreferredSize(new Dimension(200, 50));
         checkoutButton.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
+
+        // Edit discount button for quick access
+        discountEditButton = new ModernButton("Edit Discount", new Color(255, 193, 7));
+        discountEditButton.setForeground(new Color(40, 40, 40));
+        discountEditButton.setPreferredSize(new Dimension(200, 40));
     }
     
     private JLabel createSummaryLabel(String label, String value) {
@@ -95,7 +101,13 @@ public class InvoiceSummaryCard extends GlassCard {
         summaryPanel.add(totalRow);
         
         add(summaryPanel, BorderLayout.CENTER);
-        add(checkoutButton, BorderLayout.SOUTH);
+        JPanel actions = new JPanel();
+        actions.setOpaque(false);
+        actions.setLayout(new BoxLayout(actions, BoxLayout.Y_AXIS));
+        actions.add(discountEditButton);
+        actions.add(Box.createVerticalStrut(8));
+        actions.add(checkoutButton);
+        add(actions, BorderLayout.SOUTH);
     }
     
     private JPanel createSummaryRow(String label, JLabel valueLabel) {
@@ -123,6 +135,10 @@ public class InvoiceSummaryCard extends GlassCard {
     
     public void addCheckoutListener(ActionListener listener) {
         checkoutButton.addActionListener(listener);
+    }
+    
+    public void addEditDiscountListener(ActionListener listener) {
+        discountEditButton.addActionListener(listener);
     }
     
     public void setCheckoutEnabled(boolean enabled) {

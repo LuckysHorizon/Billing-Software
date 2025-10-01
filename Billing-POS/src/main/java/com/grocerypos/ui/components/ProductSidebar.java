@@ -1,10 +1,15 @@
 package com.grocerypos.ui.components;
 
+import com.grocerypos.dao.ItemDAO;
+import com.grocerypos.model.Item;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -12,6 +17,7 @@ import java.util.List;
  */
 public class ProductSidebar extends GlassCard {
     private List<ProductButton> productButtons;
+    private ItemDAO itemDAO;
     private ProductSidebarListener listener;
     
     public interface ProductSidebarListener {
@@ -26,26 +32,10 @@ public class ProductSidebar extends GlassCard {
     
     private void initializeComponents() {
         productButtons = new ArrayList<>();
-        
-        // Sample categories and products (in real implementation, this would come from database)
-        String[] categories = {"Electronics", "Groceries", "Clothing", "Books", "Home & Garden"};
-        String[][] products = {
-            {"iPhone 15", "Samsung Galaxy", "MacBook Pro", "iPad Air"},
-            {"Milk", "Bread", "Eggs", "Cheese"},
-            {"T-Shirt", "Jeans", "Sweater", "Shoes"},
-            {"Novel", "Textbook", "Magazine", "Comic"},
-            {"Plant", "Tool", "Furniture", "Decor"}
-        };
-        
-        for (int i = 0; i < categories.length; i++) {
-            addCategoryHeader(categories[i]);
-            for (String product : products[i]) {
-                addProductButton(product);
-            }
-            if (i < categories.length - 1) {
-                addSeparator();
-            }
-        }
+        try {
+            itemDAO = new ItemDAO();
+        } catch (Exception ignored) {}
+        reloadFromDatabase();
     }
     
     private void setupLayout() {
@@ -87,6 +77,54 @@ public class ProductSidebar extends GlassCard {
     
     public void setListener(ProductSidebarListener listener) {
         this.listener = listener;
+    }
+
+    public void refreshData() {
+        removeAll();
+        productButtons.clear();
+        reloadFromDatabase();
+        revalidate();
+        repaint();
+    }
+
+    private void reloadFromDatabase() {
+        if (itemDAO == null) {
+            // Fallback: minimal sample list
+            String[] fallback = {"Quick Picks", "Groceries"};
+            String[][] products = {{"Milk", "Bread", "Eggs"}, {"Sugar", "Rice"}};
+            for (int i = 0; i < fallback.length; i++) {
+                addCategoryHeader(fallback[i]);
+                for (String p : products[i]) addProductButton(p);
+                if (i < fallback.length - 1) addSeparator();
+            }
+            return;
+        }
+
+        try {
+            List<String> categories = itemDAO.getAllCategories();
+            if (categories == null) categories = new ArrayList<>();
+            // Ensure Quick Picks appear first
+            if (categories.contains("Quick Picks")) {
+                categories.remove("Quick Picks");
+                categories.add(0, "Quick Picks");
+            }
+            if (categories.isEmpty()) categories = Collections.singletonList("All");
+
+            for (int i = 0; i < categories.size(); i++) {
+                String category = categories.get(i);
+                addCategoryHeader(category);
+                List<Item> items = "All".equals(category) ? itemDAO.findAll() : itemDAO.findByCategory(category);
+                for (Item item : items) {
+                    addProductButton(item.getName());
+                }
+                if (i < categories.size() - 1) addSeparator();
+            }
+        } catch (SQLException e) {
+            // Show minimal fallback if DB fails
+            addCategoryHeader("Quick Picks");
+            addProductButton("Milk");
+            addProductButton("Bread");
+        }
     }
     
     private static class ProductButton extends JButton {

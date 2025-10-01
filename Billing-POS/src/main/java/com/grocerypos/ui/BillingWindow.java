@@ -13,6 +13,8 @@ import com.grocerypos.ui.components.*;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.print.Printable;
+import java.awt.print.PrinterJob;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.math.BigDecimal;
@@ -40,6 +42,7 @@ public class BillingWindow extends JPanel {
     private ModernButton clearCartButton;
     private ModernButton printReceiptButton;
     private ModernButton discountButton;
+    private JPopupMenu cartContextMenu;
     
     // Data
     private List<BillItem> cartItems;
@@ -82,6 +85,9 @@ public class BillingWindow extends JPanel {
         // Modern search fields
         barcodeField = new ModernSearchField("Scan barcode or enter code");
         searchField = new ModernSearchField("Search products");
+        // Enlarge the search field to achieve a wide Spotlight-like appearance
+        searchField.setPreferredSize(new Dimension(480, 40));
+        barcodeField.setPreferredSize(new Dimension(260, 40));
         
         // Cart table with modern styling
         String[] columnNames = {"Item", "Barcode", "Qty", "Price", "GST%", "GST Amt", "Total"};
@@ -113,6 +119,15 @@ public class BillingWindow extends JPanel {
         // Modern components
         summaryCard = new InvoiceSummaryCard();
         productSidebar = new ProductSidebar();
+
+        // Cart context menu for line-item discount actions
+        cartContextMenu = new JPopupMenu();
+        JMenuItem applyItemDiscount = new JMenuItem("Apply Item Discount %");
+        JMenuItem clearItemDiscount = new JMenuItem("Clear Item Discount");
+        applyItemDiscount.addActionListener(e -> applySelectedItemDiscount());
+        clearItemDiscount.addActionListener(e -> clearSelectedItemDiscount());
+        cartContextMenu.add(applyItemDiscount);
+        cartContextMenu.add(clearItemDiscount);
     }
 
     private void setupLayout() {
@@ -165,6 +180,11 @@ public class BillingWindow extends JPanel {
         cartButtonPanel.add(clearCartButton);
         cartButtonPanel.add(printReceiptButton);
         
+        // Premium button sizing
+        removeItemButton.setPreferredSize(new Dimension(120, 40));
+        clearCartButton.setPreferredSize(new Dimension(120, 40));
+        printReceiptButton.setPreferredSize(new Dimension(140, 40));
+        
         billingCard.add(cartButtonPanel, BorderLayout.SOUTH);
         
         centerPanel.add(billingCard, BorderLayout.CENTER);
@@ -190,12 +210,26 @@ public class BillingWindow extends JPanel {
     }
 
     private void setupEventHandlers() {
-        // Barcode field enter key
+        // Barcode field enter key and scanner support (scanners send Enter)
         barcodeField.addKeyListener(new KeyAdapter() {
+            private StringBuilder scannerBuffer = new StringBuilder();
+            private long lastEventTime = 0L;
             @Override
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ENTER) {
                     addItemByBarcode();
+                    scannerBuffer.setLength(0);
+                } else if (!e.isActionKey()) {
+                    // Accumulate fast keystrokes from hardware scanners
+                    long now = System.currentTimeMillis();
+                    if (now - lastEventTime > 100) {
+                        scannerBuffer.setLength(0);
+                    }
+                    lastEventTime = now;
+                    if (e.getKeyChar() >= 32 && e.getKeyChar() < 127) {
+                        scannerBuffer.append(e.getKeyChar());
+                        barcodeField.setText(scannerBuffer.toString());
+                    }
                 }
             }
         });
@@ -230,9 +264,27 @@ public class BillingWindow extends JPanel {
                 updateItemQuantity(cartTable.getSelectedRow());
             }
         });
+
+        // Context menu trigger
+        cartTable.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mousePressed(java.awt.event.MouseEvent e) { maybeShowContextMenu(e); }
+            @Override
+            public void mouseReleased(java.awt.event.MouseEvent e) { maybeShowContextMenu(e); }
+            private void maybeShowContextMenu(java.awt.event.MouseEvent e) {
+                if (e.isPopupTrigger()) {
+                    int row = cartTable.rowAtPoint(e.getPoint());
+                    if (row >= 0 && row < cartTable.getRowCount()) {
+                        cartTable.setRowSelectionInterval(row, row);
+                        cartContextMenu.show(cartTable, e.getX(), e.getY());
+                    }
+                }
+            }
+        });
         
-        // Summary card checkout
+        // Summary card actions
         summaryCard.addCheckoutListener(e -> processCheckout());
+        summaryCard.addEditDiscountListener(e -> promptDiscount());
         
         // Product sidebar listener
         productSidebar.setListener(new ProductSidebar.ProductSidebarListener() {
@@ -396,6 +448,13 @@ public class BillingWindow extends JPanel {
         cartItems.add(billItem);
         updateCartTable();
         updateTotals();
+        // Animate cart update and ensure the last row is visible
+        int lastRow = cartModel.getRowCount() - 1;
+        if (lastRow >= 0) {
+            cartTable.setRowSelectionInterval(lastRow, lastRow);
+            cartTable.scrollRectToVisible(cartTable.getCellRect(lastRow, 0, true));
+        }
+        AnimationUtils.slideIn(cartTable, 220, AnimationUtils.SlideDirection.FROM_RIGHT);
     }
 
     private void updateCartTable() {
@@ -430,6 +489,35 @@ public class BillingWindow extends JPanel {
         }
     }
 
+    private void applySelectedItemDiscount() {
+        int row = cartTable.getSelectedRow();
+        if (row < 0 || row >= cartItems.size()) return;
+        String input = JOptionPane.showInputDialog(this, "Discount % for '" + cartItems.get(row).getItemName() + "' (0-100):", "0");
+        if (input == null) return;
+        try {
+            BigDecimal percent = new BigDecimal(input.trim());
+            if (percent.compareTo(BigDecimal.ZERO) < 0 || percent.compareTo(new BigDecimal("100")) > 0) {
+                ToastNotification.showWarning(SwingUtilities.getWindowAncestor(this), "Discount must be between 0 and 100");
+                return;
+            }
+            cartItems.get(row).setDiscountPercentageAndRecalculate(percent);
+            updateCartTable();
+            updateTotals();
+            ToastNotification.showSuccess(SwingUtilities.getWindowAncestor(this), "Discount applied to item");
+        } catch (NumberFormatException ex) {
+            ToastNotification.showError(SwingUtilities.getWindowAncestor(this), "Invalid number");
+        }
+    }
+
+    private void clearSelectedItemDiscount() {
+        int row = cartTable.getSelectedRow();
+        if (row < 0 || row >= cartItems.size()) return;
+        cartItems.get(row).setDiscountPercentageAndRecalculate(BigDecimal.ZERO);
+        updateCartTable();
+        updateTotals();
+        ToastNotification.showInfo(SwingUtilities.getWindowAncestor(this), "Item discount cleared");
+    }
+
     private void removeSelectedItem() {
         int selectedRow = cartTable.getSelectedRow();
         if (selectedRow != -1 && selectedRow < cartItems.size()) {
@@ -437,6 +525,7 @@ public class BillingWindow extends JPanel {
             updateCartTable();
             updateTotals();
             ToastNotification.showInfo(SwingUtilities.getWindowAncestor(this), "Item removed from cart");
+            AnimationUtils.slideIn(cartTable, 200, AnimationUtils.SlideDirection.FROM_LEFT);
         }
     }
 
@@ -538,6 +627,16 @@ public class BillingWindow extends JPanel {
                 }
                 
                 ToastNotification.showSuccess(SwingUtilities.getWindowAncestor(this), "Bill processed successfully!\nBill Number: " + currentBillNumber);
+
+                // Offer to print the receipt immediately after successful payment
+                int option = JOptionPane.showConfirmDialog(this,
+                    "Payment completed. Do you want to print the receipt now?",
+                    "Print Receipt",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.QUESTION_MESSAGE);
+                if (option == JOptionPane.YES_OPTION) {
+                    printReceipt();
+                }
                 
                 // Clear cart and generate new bill number
                 cartItems.clear();
@@ -585,14 +684,62 @@ public class BillingWindow extends JPanel {
         receipt.append("    Thank you for shopping!\n");
         receipt.append("================================\n");
         
-        // Show receipt in dialog
+        // Show receipt dialog with Print option
         JTextArea receiptArea = new JTextArea(receipt.toString());
         receiptArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
         receiptArea.setEditable(false);
-        
+
         JScrollPane scrollPane = new JScrollPane(receiptArea);
-        scrollPane.setPreferredSize(new Dimension(400, 500));
-        
-        JOptionPane.showMessageDialog(this, scrollPane, "Receipt", JOptionPane.INFORMATION_MESSAGE);
+        scrollPane.setPreferredSize(new Dimension(420, 520));
+
+        Object[] options = {"Print", "Close"};
+        int choice = JOptionPane.showOptionDialog(
+            this,
+            scrollPane,
+            "Receipt - " + currentBillNumber,
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.INFORMATION_MESSAGE,
+            null,
+            options,
+            options[0]
+        );
+
+        if (choice == JOptionPane.YES_OPTION) {
+            try {
+                printReceiptToPrinter(receipt.toString());
+                ToastNotification.showSuccess(SwingUtilities.getWindowAncestor(this), "Receipt sent to printer");
+            } catch (Exception e) {
+                ToastNotification.showError(SwingUtilities.getWindowAncestor(this), "Print failed: " + e.getMessage());
+            }
+        }
+    }
+
+    private void printReceiptToPrinter(String receiptContent) throws Exception {
+        PrinterJob printerJob = PrinterJob.getPrinterJob();
+        printerJob.setJobName("Grocery POS Receipt - " + currentBillNumber);
+
+        printerJob.setPrintable((graphics, pageFormat, pageIndex) -> {
+            if (pageIndex > 0) return Printable.NO_SUCH_PAGE;
+
+            Graphics2D g2d = (Graphics2D) graphics;
+            g2d.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 10));
+
+            String[] lines = receiptContent.split("\n");
+            int x = 50;
+            int y = 50;
+            int lineHeight = 14;
+            for (String line : lines) {
+                g2d.drawString(line, x, y);
+                y += lineHeight;
+            }
+
+            return Printable.PAGE_EXISTS;
+        });
+
+        if (printerJob.printDialog()) {
+            printerJob.print();
+        } else {
+            throw new Exception("User cancelled print dialog");
+        }
     }
 }

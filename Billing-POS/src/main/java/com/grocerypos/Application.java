@@ -201,6 +201,12 @@ public class Application extends JFrame {
     }
 
     public void showCashierPanel() {
+        // Ensure only our CardLayout panel is visible to avoid ghost windows
+        for (Component comp : mainPanel.getComponents()) {
+            if (comp != billingWindow && comp instanceof JFrame) {
+                ((JFrame) comp).dispose();
+            }
+        }
         cardLayout.show(mainPanel, "CASHIER");
         billingWindow.setVisible(true);
         setTitle("Grocery POS System - Modern Billing");

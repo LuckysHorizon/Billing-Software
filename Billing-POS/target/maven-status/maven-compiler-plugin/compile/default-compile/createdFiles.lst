@@ -12,6 +12,7 @@ com\grocerypos\model\User$Role.class
 com\grocerypos\ui\components\MacTopBar.class
 com\grocerypos\util\ThemeManager.class
 com\grocerypos\ui\panels\CashierPanel$10.class
+com\grocerypos\ui\BillingWindow$5.class
 com\grocerypos\model\Bill.class
 com\grocerypos\ui\panels\CashierPanel$2.class
 com\grocerypos\ui\PaymentDialog$1.class
@@ -35,6 +36,7 @@ com\grocerypos\util\TestLogin.class
 com\grocerypos\ui\BillingWindow$4.class
 com\grocerypos\util\GeneratePasswords.class
 com\grocerypos\ui\components\ToastNotification.class
+com\grocerypos\ui\panels\LoginPanel$4.class
 com\grocerypos\ui\components\ProductSidebar.class
 com\grocerypos\ui\components\ProductSidebar$ProductButton.class
 com\grocerypos\ui\components\GlassCard.class
@@ -48,6 +50,7 @@ com\grocerypos\ui\PaymentDialog.class
 com\grocerypos\ui\panels\SettingsPanel.class
 com\grocerypos\model\User.class
 com\grocerypos\ui\components\GlassSidebar$SidebarListener.class
+com\grocerypos\ui\panels\LoginPanel$5.class
 com\grocerypos\ui\components\MacTopBar$1.class
 com\grocerypos\model\Item.class
 com\grocerypos\ui\panels\CashierPanel$3.class

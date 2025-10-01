@@ -26,6 +26,7 @@ public class ModernSearchField extends JTextField {
         setBorder(BorderFactory.createEmptyBorder(12, 16, 12, 16));
         setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
         setForeground(new Color(50, 50, 50));
+        setPreferredSize(new Dimension(360, 40));
         
         // Focus listener for animations
         addFocusListener(new java.awt.event.FocusAdapter() {
@@ -75,10 +76,14 @@ public class ModernSearchField extends JTextField {
         
         // Background with glass effect
         Color bgColor = isFocused ? 
-            new Color(255, 255, 255, 240) : 
-            new Color(255, 255, 255, 200);
+            new Color(255, 255, 255, 245) : 
+            new Color(255, 255, 255, 215);
         g2.setColor(bgColor);
         g2.fillRoundRect(0, 0, w, h, 12, 12);
+        
+        // Soft drop shadow for premium feel
+        g2.setColor(new Color(0, 0, 0, isFocused ? 40 : 20));
+        g2.fillRoundRect(2, 3, w, h, 12, 12);
         
         // Focus border
         if (isFocused) {
