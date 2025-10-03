@@ -229,9 +229,10 @@ public class LoginFrame extends JFrame {
                         dispose();
                         SwingUtilities.invokeLater(() -> {
                             try {
-                                // Prefer modern Application shell to avoid duplicate windows
+                                // Launch modern Application shell and go straight to dashboard
                                 com.grocerypos.Application app = new com.grocerypos.Application();
                                 app.setVisible(true);
+                                app.loginSuccessful();
                             } catch (Exception e) {
                                 System.err.println("Failed to show main window: " + e.getMessage());
                                 e.printStackTrace();

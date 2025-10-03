@@ -260,6 +260,14 @@ public class MainWindow extends JFrame {
     private void openNewBill() {
         statusLabel.setText("Opening new bill...");
         try {
+            // Redirect to Application cashier panel if running
+            for (Window w : Window.getWindows()) {
+                if (w instanceof com.grocerypos.Application) {
+                    ((com.grocerypos.Application) w).showCashierPanel();
+                    return;
+                }
+            }
+            // Fallback to standalone billing panel if Application not open
             BillingWindow billingWindow = new BillingWindow();
             billingWindow.setVisible(true);
         } catch (Exception e) {

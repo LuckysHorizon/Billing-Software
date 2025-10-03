@@ -175,7 +175,22 @@ public class Application extends JFrame {
     }
 
     private void setupEventHandlers() {
-        // Navigation is provided by GlassSidebar listener; no additional handlers needed here
+        // Global shortcuts for quick access
+        JRootPane root = getRootPane();
+        if (root != null) {
+            root.registerKeyboardAction(e -> showReportsPanel(),
+                KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_DOWN_MASK),
+                JComponent.WHEN_IN_FOCUSED_WINDOW);
+            root.registerKeyboardAction(e -> {
+                try {
+                    com.grocerypos.ui.BarcodeGeneratorWindow.getInstance().setVisible(true);
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(this, "Error opening barcode generator: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            },
+                KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_P, java.awt.event.InputEvent.CTRL_DOWN_MASK),
+                JComponent.WHEN_IN_FOCUSED_WINDOW);
+        }
     }
 
     public void showLoginPanel() {
@@ -285,7 +300,8 @@ public class Application extends JFrame {
 
         SwingUtilities.invokeLater(() -> {
             try {
-                new Application().setVisible(true);
+                // Use classic LoginFrame as the primary login window
+                new com.grocerypos.ui.LoginFrame().setVisible(true);
             } catch (Exception e) {
                 System.err.println("Failed to start application: " + e.getMessage());
                 e.printStackTrace();

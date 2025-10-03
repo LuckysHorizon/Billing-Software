@@ -15,12 +15,14 @@ import java.awt.print.PrinterJob;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BarcodeGeneratorWindow extends JFrame {
+public class BarcodeGeneratorWindow extends JDialog {
     private static BarcodeGeneratorWindow instance;
     private JTextField inputField;
     private JTextArea bulkArea;
     private JLabel previewLabel;
     private BufferedImage currentBarcode;
+    /* override for labels per page */
+    private int labelsPerPageOverride = -1;
 
     public static BarcodeGeneratorWindow getInstance() {
         if (instance == null || !instance.isDisplayable()) {
@@ -30,9 +32,9 @@ public class BarcodeGeneratorWindow extends JFrame {
     }
 
     private BarcodeGeneratorWindow(boolean fromFactory) {
+        super((Frame) null, "Barcode Generator", true);
         System.out.println("[BarcodeGeneratorWindow] Constructing new instance " + this);
-        setTitle("Barcode Generator");
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         setSize(720, 520);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout(12, 12));
@@ -105,7 +107,7 @@ public class BarcodeGeneratorWindow extends JFrame {
             PrinterJob job = PrinterJob.getPrinterJob();
             job.setJobName("Barcode Print");
             job.setPrintable((graphics, pageFormat, pageIndex) -> {
-                int labelsPerPage = 8; // 2 columns x 4 rows
+                int labelsPerPage = labelsPerPageOverride > 0 ? labelsPerPageOverride : 8; // 2x4 default
                 int totalPages = (int) Math.ceil(values.size() / (double) labelsPerPage);
                 if (pageIndex >= totalPages) return Printable.NO_SUCH_PAGE;
 
@@ -145,6 +147,18 @@ public class BarcodeGeneratorWindow extends JFrame {
     private BufferedImage createBarcodeImage(String value, int width, int height) throws Exception {
         BitMatrix matrix = new MultiFormatWriter().encode(value, BarcodeFormat.CODE_128, width, height);
         return MatrixToImageWriter.toBufferedImage(matrix);
+    }
+
+    // Public helpers for external panels
+    public void setBarcodeValue(String value) {
+        if (value == null) return;
+        inputField.setText(value);
+        // Try to auto-preview
+        try { generatePreview(); } catch (Exception ignore) {}
+    }
+
+    public void setLabelsPerPage(int labelsPerPage) {
+        if (labelsPerPage > 0) this.labelsPerPageOverride = labelsPerPage;
     }
 }
 

@@ -72,7 +72,6 @@ com\grocerypos\ui\components\ModernSearchField$2.class
 com\grocerypos\ui\panels\ItemDialog.class
 com\grocerypos\model\BillItem.class
 com\grocerypos\ui\panels\PaymentDialog.class
-com\grocerypos\ui\LoginWindow.class
 com\grocerypos\util\ResetDatabase.class
 com\grocerypos\ui\panels\LoginPanel.class
 com\grocerypos\Main.class
@@ -89,7 +88,6 @@ com\grocerypos\ui\LoginFrame$2.class
 com\grocerypos\Application$1.class
 com\grocerypos\ui\panels\ReportsPanel$1.class
 com\grocerypos\ui\BillingWindow.class
-com\grocerypos\ui\LoginWindow$2.class
 com\grocerypos\ui\panels\CashierPanel$4.class
 com\grocerypos\util\SoundUtils.class
 com\grocerypos\ui\panels\LoginPanel$2.class
@@ -103,7 +101,6 @@ com\grocerypos\ui\components\ProductSidebar$ProductSidebarListener.class
 com\grocerypos\util\PasswordUtil.class
 com\grocerypos\dao\BillDAO.class
 com\grocerypos\util\SessionManager.class
-com\grocerypos\ui\LoginWindow$1.class
 com\grocerypos\ui\components\ModernSearchField.class
 com\grocerypos\ui\components\GlassSidebar$2.class
 com\grocerypos\ui\panels\ReportsPanel.class

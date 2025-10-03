@@ -7,8 +7,6 @@ import com.grocerypos.model.Item;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.ActionListener;
-import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -25,6 +23,10 @@ public class AdminPanel extends JPanel {
     private JButton deleteItemButton;
     private JButton refreshButton;
     private JButton lowStockButton;
+    private JLabel shortcutHintLabel;
+    private JTextField productIdField;
+    private JSpinner quantityPerPageSpinner;
+    private JButton printBarcodeButton;
     
     private ItemDAO itemDAO;
 
@@ -104,6 +106,19 @@ public class AdminPanel extends JPanel {
         lowStockButton.setForeground(Color.BLACK);
         lowStockButton.setFocusPainted(false);
         lowStockButton.setPreferredSize(new Dimension(150, 35));
+
+        // Shortcut hint and barcode print controls
+        shortcutHintLabel = new JLabel("Tip: Press Ctrl+P to open Barcode Generator");
+        shortcutHintLabel.setForeground(new Color(100, 100, 100));
+        productIdField = new JTextField(8);
+        productIdField.setToolTipText("Product ID");
+        quantityPerPageSpinner = new JSpinner(new SpinnerNumberModel(8, 1, 64, 1));
+        ((JSpinner.DefaultEditor) quantityPerPageSpinner.getEditor()).getTextField().setColumns(4);
+        quantityPerPageSpinner.setToolTipText("Labels per page");
+        printBarcodeButton = new JButton("Print Barcodes");
+        printBarcodeButton.setBackground(new Color(23,162,184));
+        printBarcodeButton.setForeground(Color.WHITE);
+        printBarcodeButton.setFocusPainted(false);
     }
 
     private void setupLayout() {
@@ -111,27 +126,46 @@ public class AdminPanel extends JPanel {
         setBackground(Color.WHITE);
         
         // Top panel - Search and buttons
-        JPanel topPanel = new JPanel(new BorderLayout(10, 10));
+        JPanel topPanel = new JPanel(new BorderLayout(16, 12));
         topPanel.setBorder(BorderFactory.createTitledBorder("Product Management"));
         topPanel.setBackground(Color.WHITE);
         
-        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
+        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 8));
         searchPanel.setBackground(Color.WHITE);
         searchPanel.add(new JLabel("Search:"));
         searchPanel.add(searchField);
         searchPanel.add(refreshButton);
         
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+        JPanel barcodePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 8));
+        barcodePanel.setBackground(Color.WHITE);
+        barcodePanel.add(new JLabel("Product ID:"));
+        barcodePanel.add(productIdField);
+        barcodePanel.add(new JLabel("Per Page:"));
+        barcodePanel.add(quantityPerPageSpinner);
+        barcodePanel.add(printBarcodeButton);
+        
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 8));
         buttonPanel.setBackground(Color.WHITE);
         buttonPanel.add(lowStockButton);
         buttonPanel.add(addItemButton);
         buttonPanel.add(editItemButton);
         buttonPanel.add(deleteItemButton);
         
-        topPanel.add(searchPanel, BorderLayout.WEST);
+        JPanel leftStack = new JPanel(new GridLayout(2,1));
+        leftStack.setOpaque(false);
+        leftStack.add(searchPanel);
+        leftStack.add(barcodePanel);
+        topPanel.add(leftStack, BorderLayout.CENTER);
         topPanel.add(buttonPanel, BorderLayout.EAST);
         
-        add(topPanel, BorderLayout.NORTH);
+        JPanel northWrapper = new JPanel(new BorderLayout());
+        northWrapper.setBackground(Color.WHITE);
+        northWrapper.add(topPanel, BorderLayout.CENTER);
+        JPanel hintPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 4));
+        hintPanel.setBackground(Color.WHITE);
+        hintPanel.add(shortcutHintLabel);
+        northWrapper.add(hintPanel, BorderLayout.SOUTH);
+        add(northWrapper, BorderLayout.NORTH);
         
         // Center panel - Items table
         JPanel centerPanel = new JPanel(new BorderLayout());
@@ -164,6 +198,9 @@ public class AdminPanel extends JPanel {
         
         // Low stock button
         lowStockButton.addActionListener(e -> showLowStockItems());
+
+        // Print barcodes by product ID and labels per page
+        printBarcodeButton.addActionListener(e -> printBarcodesForProduct());
         
         // Table selection
         itemsTable.getSelectionModel().addListSelectionListener(e -> {
@@ -347,6 +384,38 @@ public class AdminPanel extends JPanel {
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, "Error loading low stock items: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             parent.setStatus("Error loading low stock items");
+        }
+    }
+
+    private void printBarcodesForProduct() {
+        String idText = productIdField.getText().trim();
+        if (idText.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Enter Product ID", "Input Required", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        int perPage = (Integer) quantityPerPageSpinner.getValue();
+        try {
+            int productId = Integer.parseInt(idText);
+            Item item = itemDAO.findById(productId);
+            if (item == null) {
+                JOptionPane.showMessageDialog(this, "Product not found", "Not Found", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            String barcodeValue = item.getBarcode();
+            if (barcodeValue == null || barcodeValue.trim().isEmpty()) {
+                JOptionPane.showMessageDialog(this, "This product has no barcode assigned", "Missing Barcode", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            // Open generator and prefill; print with specified labels per page
+            com.grocerypos.ui.BarcodeGeneratorWindow gen = com.grocerypos.ui.BarcodeGeneratorWindow.getInstance();
+            gen.setBarcodeValue(barcodeValue);
+            gen.setLabelsPerPage(perPage);
+            gen.setVisible(true);
+            gen.toFront();
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Invalid Product ID", "Input Error", JOptionPane.ERROR_MESSAGE);
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(this, "Database error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 }
