@@ -136,13 +136,26 @@ public class AdminPanel extends JPanel {
         searchPanel.add(searchField);
         searchPanel.add(refreshButton);
         
-        JPanel barcodePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 8));
+        JPanel barcodePanel = new JPanel(new GridBagLayout());
         barcodePanel.setBackground(Color.WHITE);
-        barcodePanel.add(new JLabel("Product ID:"));
-        barcodePanel.add(productIdField);
-        barcodePanel.add(new JLabel("Per Page:"));
-        barcodePanel.add(quantityPerPageSpinner);
-        barcodePanel.add(printBarcodeButton);
+        GridBagConstraints gbcBP = new GridBagConstraints();
+        gbcBP.insets = new Insets(0, 0, 0, 8);
+        gbcBP.gridy = 0;
+        gbcBP.anchor = GridBagConstraints.WEST;
+        // Product ID label
+        gbcBP.gridx = 0; barcodePanel.add(new JLabel("Product ID:"), gbcBP);
+        // Product ID field (fixed width)
+        gbcBP.gridx = 1; barcodePanel.add(productIdField, gbcBP);
+        // Per Page label
+        gbcBP.gridx = 2; barcodePanel.add(new JLabel("Per Page:"), gbcBP);
+        // Spinner
+        gbcBP.gridx = 3; barcodePanel.add(quantityPerPageSpinner, gbcBP);
+        // Glue to push Print button right if space available
+        gbcBP.gridx = 4; gbcBP.weightx = 1.0; gbcBP.fill = GridBagConstraints.HORIZONTAL; 
+        barcodePanel.add(Box.createHorizontalStrut(0), gbcBP);
+        // Print button
+        gbcBP.gridx = 5; gbcBP.weightx = 0; gbcBP.fill = GridBagConstraints.NONE; 
+        barcodePanel.add(printBarcodeButton, gbcBP);
         
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 8));
         buttonPanel.setBackground(Color.WHITE);

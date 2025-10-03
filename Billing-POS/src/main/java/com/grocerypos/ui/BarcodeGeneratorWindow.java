@@ -94,7 +94,8 @@ public class BarcodeGeneratorWindow extends JDialog {
 
     private void printBarcodes() {
         List<String> values = new ArrayList<>();
-        if (!inputField.getText().trim().isEmpty()) values.add(inputField.getText().trim());
+        String single = inputField.getText().trim();
+        if (!single.isEmpty()) values.add(single);
         for (String line : bulkArea.getText().split("\n")) {
             String v = line.trim();
             if (!v.isEmpty()) values.add(v);
@@ -103,12 +104,21 @@ public class BarcodeGeneratorWindow extends JDialog {
             JOptionPane.showMessageDialog(this, "Provide at least one value to print.", "Input Required", JOptionPane.WARNING_MESSAGE);
             return;
         }
+        // If only a single value was provided and no bulk list, fill the first page with copies
+        int labelsPerPage = labelsPerPageOverride > 0 ? labelsPerPageOverride : 8;
+        if (values.size() == 1 && (bulkArea.getText() == null || bulkArea.getText().trim().isEmpty())) {
+            List<String> repeated = new ArrayList<>();
+            for (int i = 0; i < labelsPerPage; i++) repeated.add(values.get(0));
+            values = repeated;
+        }
         try {
             PrinterJob job = PrinterJob.getPrinterJob();
             job.setJobName("Barcode Print");
+            // Ensure effectively-final variables for lambda
+            final java.util.List<String> finalValues = new ArrayList<>(values);
+            final int labelsPerPageLocal = labelsPerPageOverride > 0 ? labelsPerPageOverride : 8; // 2x4 default
             job.setPrintable((graphics, pageFormat, pageIndex) -> {
-                int labelsPerPage = labelsPerPageOverride > 0 ? labelsPerPageOverride : 8; // 2x4 default
-                int totalPages = (int) Math.ceil(values.size() / (double) labelsPerPage);
+                int totalPages = (int) Math.ceil(finalValues.size() / (double) labelsPerPageLocal);
                 if (pageIndex >= totalPages) return Printable.NO_SUCH_PAGE;
 
                 Graphics2D g2 = (Graphics2D) graphics;
@@ -116,15 +126,15 @@ public class BarcodeGeneratorWindow extends JDialog {
                 int columnWidth = (int) (pageFormat.getImageableWidth() / 2);
                 int rowHeight = (int) (pageFormat.getImageableHeight() / 4);
 
-                int start = pageIndex * labelsPerPage;
-                for (int i = 0; i < labelsPerPage; i++) {
+                int start = pageIndex * labelsPerPageLocal;
+                for (int i = 0; i < labelsPerPageLocal; i++) {
                     int idx = start + i;
-                    if (idx >= values.size()) break;
+                    if (idx >= finalValues.size()) break;
                     int row = i / 2;
                     int col = i % 2;
                     int x = col * columnWidth + 20;
                     int y = row * rowHeight + 20;
-                    String v = values.get(idx);
+                    String v = finalValues.get(idx);
                     BufferedImage img;
                     try {
                         img = createBarcodeImage(v, columnWidth - 40, 100);
