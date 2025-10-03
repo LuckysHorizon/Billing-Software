@@ -8,6 +8,8 @@ D:\Projects\Billing-POS\src\main\java\com\grocerypos\ui\panels\SettingsPanel.jav
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\ui\components\MacTopBar.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\ui\InventoryWindow.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\ui\PaymentDialog.java
+D:\Projects\Billing-POS\src\main\java\com\grocerypos\ui\LoginWindow.java
+D:\Projects\Billing-POS\src\main\java\com\grocerypos\util\SoundUtils.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\ui\components\LoadingSpinner.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\ui\panels\LoginPanel.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\dao\InventoryMovementDAO.java
@@ -30,6 +32,7 @@ D:\Projects\Billing-POS\src\main\java\com\grocerypos\ui\ItemDialog.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\util\SessionManager.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\model\InventoryMovement.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\ui\components\ModernSearchField.java
+D:\Projects\Billing-POS\src\main\java\com\grocerypos\ui\BarcodeGeneratorWindow.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\Main.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\model\User.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\database\DBUtil.java

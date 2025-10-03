@@ -30,11 +30,7 @@ public class LoginFrame extends JFrame {
         setLocationRelativeTo(null);
         setTitle("Grocery POS - Login");
         
-        // Make sure the window is visible and on top
-        setAlwaysOnTop(true);
-        setVisible(true);
-        toFront();
-        requestFocus();
+        // Prefer showing the newer LoginWindow; keep this for backward compatibility
         
         // Debug output
         System.out.println("Login window created and should be visible");
@@ -233,8 +229,9 @@ public class LoginFrame extends JFrame {
                         dispose();
                         SwingUtilities.invokeLater(() -> {
                             try {
-                                MainWindow mainWindow = new MainWindow();
-                                mainWindow.setVisible(true);
+                                // Prefer modern Application shell to avoid duplicate windows
+                                com.grocerypos.Application app = new com.grocerypos.Application();
+                                app.setVisible(true);
                             } catch (Exception e) {
                                 System.err.println("Failed to show main window: " + e.getMessage());
                                 e.printStackTrace();

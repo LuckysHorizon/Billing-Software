@@ -7,7 +7,6 @@ import com.grocerypos.model.Bill;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.ActionListener;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -19,6 +18,7 @@ import java.util.List;
  * Reports window for sales and inventory reports
  */
 public class ReportsWindow extends JFrame {
+    private static ReportsWindow instance;
     private JTabbedPane tabbedPane;
     private JTable salesTable;
     private DefaultTableModel salesModel;
@@ -34,7 +34,15 @@ public class ReportsWindow extends JFrame {
     private BillDAO billDAO;
     private ItemDAO itemDAO;
 
-    public ReportsWindow() {
+    public static ReportsWindow getInstance() {
+        if (instance == null) {
+            instance = new ReportsWindow(true);
+        }
+        return instance;
+    }
+
+    private ReportsWindow(boolean fromFactory) {
+        System.out.println("[ReportsWindow] Constructing new instance " + this);
         initializeComponents();
         setupLayout();
         setupEventHandlers();
@@ -47,6 +55,10 @@ public class ReportsWindow extends JFrame {
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Database connection error: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    public ReportsWindow() {
+        this(true);
     }
 
     private void initializeComponents() {
@@ -238,7 +250,7 @@ public class ReportsWindow extends JFrame {
             
             for (com.grocerypos.model.Item item : items) {
                 String status = item.getStockQuantity() <= item.getMinStockLevel() ? "LOW STOCK" : "OK";
-                Color statusColor = item.getStockQuantity() <= item.getMinStockLevel() ? Color.RED : Color.GREEN;
+                // status color reserved for future cell renderers
                 
                 Object[] row = {
                     item.getName(),
@@ -257,7 +269,41 @@ public class ReportsWindow extends JFrame {
     }
 
     private void exportReport() {
-        JOptionPane.showMessageDialog(this, "Export functionality will be implemented soon!", "Coming Soon", JOptionPane.INFORMATION_MESSAGE);
+        // Export current sales table to CSV
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle("Save Sales Report as CSV");
+        chooser.setSelectedFile(new java.io.File("sales.csv"));
+        int result = chooser.showSaveDialog(this);
+        if (result != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+        java.io.File file = chooser.getSelectedFile();
+        try (java.io.FileWriter csv = new java.io.FileWriter(file)) {
+            // Header
+            csv.write("Date,Bill No,Customer,Items,Subtotal,GST,Total,Payment\n");
+            // Rows
+            for (int r = 0; r < salesModel.getRowCount(); r++) {
+                StringBuilder line = new StringBuilder();
+                for (int c = 0; c < salesModel.getColumnCount(); c++) {
+                    Object val = salesModel.getValueAt(r, c);
+                    String text = val != null ? val.toString() : "";
+                    // Strip any currency symbols and commas if present visually
+                    text = text.replace("₹", "").replace(",", "");
+                    // Escape quotes
+                    if (text.contains(",") || text.contains("\"") || text.contains("\n")) {
+                        text = '"' + text.replace("\"", "\"\"") + '"';
+                    }
+                    line.append(text);
+                    if (c < salesModel.getColumnCount() - 1) line.append(',');
+                }
+                csv.write(line.toString());
+                csv.write("\n");
+            }
+            csv.flush();
+            JOptionPane.showMessageDialog(this, "Exported to: " + file.getAbsolutePath(), "Export Complete", JOptionPane.INFORMATION_MESSAGE);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Failed to export CSV: " + ex.getMessage(), "Export Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 }
 

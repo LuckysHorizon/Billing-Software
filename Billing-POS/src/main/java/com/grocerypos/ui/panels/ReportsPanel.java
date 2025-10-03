@@ -39,6 +39,7 @@ public class ReportsPanel extends JPanel {
 
     public ReportsPanel(Application parent) {
         this.parent = parent;
+        System.out.println("[ReportsPanel] Constructing new instance " + this);
         initializeComponents();
         setupLayout();
         setupEventHandlers();
@@ -266,8 +267,38 @@ public class ReportsPanel extends JPanel {
     }
 
     private void exportReport() {
-        JOptionPane.showMessageDialog(this, "Export functionality will be implemented soon!", "Coming Soon", JOptionPane.INFORMATION_MESSAGE);
-        parent.setStatus("Export functionality coming soon");
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle("Save Sales Report as CSV");
+        chooser.setSelectedFile(new java.io.File("sales.csv"));
+        int result = chooser.showSaveDialog(this);
+        if (result != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+        java.io.File file = chooser.getSelectedFile();
+        try (java.io.FileWriter csv = new java.io.FileWriter(file)) {
+            csv.write("Date,Bill No,Customer,Items,Subtotal,GST,Total,Payment\n");
+            for (int r = 0; r < salesModel.getRowCount(); r++) {
+                StringBuilder line = new StringBuilder();
+                for (int c = 0; c < salesModel.getColumnCount(); c++) {
+                    Object val = salesModel.getValueAt(r, c);
+                    String text = val != null ? val.toString() : "";
+                    text = text.replace("₹", "").replace(",", "");
+                    if (text.contains(",") || text.contains("\"") || text.contains("\n")) {
+                        text = '"' + text.replace("\"", "\"\"") + '"';
+                    }
+                    line.append(text);
+                    if (c < salesModel.getColumnCount() - 1) line.append(',');
+                }
+                csv.write(line.toString());
+                csv.write("\n");
+            }
+            csv.flush();
+            JOptionPane.showMessageDialog(this, "Exported to: " + file.getAbsolutePath(), "Export Complete", JOptionPane.INFORMATION_MESSAGE);
+            parent.setStatus("Exported report to CSV");
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Failed to export CSV: " + ex.getMessage(), "Export Error", JOptionPane.ERROR_MESSAGE);
+            parent.setStatus("Export failed: " + ex.getMessage());
+        }
     }
 }
 

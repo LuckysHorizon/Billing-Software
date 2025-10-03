@@ -19,6 +19,7 @@ public class MainWindow extends JFrame {
     private JMenuItem newBillItem;
     private JMenuItem inventoryItem;
     private JMenuItem reportsItem;
+    private JMenuItem barcodeItem;
     private JMenuItem usersItem;
     private JMenuItem settingsItem;
     private JMenuItem logoutItem;
@@ -59,6 +60,7 @@ public class MainWindow extends JFrame {
         newBillItem = new JMenuItem("New Bill");
         inventoryItem = new JMenuItem("Inventory Management");
         reportsItem = new JMenuItem("Reports");
+        barcodeItem = new JMenuItem("Barcode Generator");
         usersItem = new JMenuItem("User Management");
         settingsItem = new JMenuItem("Settings");
         logoutItem = new JMenuItem("Logout");
@@ -94,6 +96,7 @@ public class MainWindow extends JFrame {
         JMenu toolsMenu = new JMenu("Tools");
         toolsMenu.setMnemonic('T');
         toolsMenu.add(settingsItem);
+        toolsMenu.add(barcodeItem);
         
         // Help menu
         JMenu helpMenu = new JMenu("Help");
@@ -212,6 +215,7 @@ public class MainWindow extends JFrame {
         newBillItem.addActionListener(e -> openNewBill());
         inventoryItem.addActionListener(e -> openInventory());
         reportsItem.addActionListener(e -> openReports());
+        barcodeItem.addActionListener(e -> openBarcodeGenerator());
         usersItem.addActionListener(e -> openUserManagement());
         settingsItem.addActionListener(e -> openSettings());
         logoutItem.addActionListener(e -> logout());
@@ -222,6 +226,14 @@ public class MainWindow extends JFrame {
         inventoryButton.addActionListener(e -> openInventory());
         reportsButton.addActionListener(e -> openReports());
         settingsButton.addActionListener(e -> openSettings());
+
+        // Shortcuts
+        getRootPane().registerKeyboardAction(e -> openReports(),
+            KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_DOWN_MASK),
+            JComponent.WHEN_IN_FOCUSED_WINDOW);
+        getRootPane().registerKeyboardAction(e -> openBarcodeGenerator(),
+            KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_P, java.awt.event.InputEvent.CTRL_DOWN_MASK),
+            JComponent.WHEN_IN_FOCUSED_WINDOW);
         
         // About menu item
         JMenuItem aboutItem = new JMenuItem("About");
@@ -268,8 +280,7 @@ public class MainWindow extends JFrame {
     private void openReports() {
         statusLabel.setText("Opening reports...");
         try {
-            ReportsWindow reportsWindow = new ReportsWindow();
-            reportsWindow.setVisible(true);
+            ReportsWindow.getInstance().setVisible(true);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Error opening reports window: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
@@ -289,6 +300,17 @@ public class MainWindow extends JFrame {
         statusLabel.setText("Opening settings...");
         // TODO: Implement settings window
         JOptionPane.showMessageDialog(this, "Settings feature will be implemented soon!", "Coming Soon", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void openBarcodeGenerator() {
+        statusLabel.setText("Opening barcode generator...");
+        try {
+            BarcodeGeneratorWindow w = BarcodeGeneratorWindow.getInstance();
+            w.setVisible(true);
+            w.toFront();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error opening barcode generator: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void logout() {

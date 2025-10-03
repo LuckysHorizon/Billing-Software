@@ -9,6 +9,7 @@ import com.grocerypos.model.BillItem;
 import com.grocerypos.model.InventoryMovement;
 import com.grocerypos.util.SessionManager;
 import com.grocerypos.ui.components.*;
+import com.grocerypos.util.SoundUtils;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -59,6 +60,7 @@ public class BillingWindow extends JPanel {
     private String currentBillNumber;
 
     public BillingWindow() {
+        System.out.println("[BillingWindow] Constructing new instance " + this);
         initializeComponents();
         setupLayout();
         setupEventHandlers();
@@ -355,6 +357,8 @@ public class BillingWindow extends JPanel {
                 barcodeField.setText("");
                 barcodeField.requestFocus();
                 ToastNotification.showSuccess(SwingUtilities.getWindowAncestor(this), "Item added: " + item.getName());
+                // Play scanner beep
+                SoundUtils.playBeep();
             } else {
                 ToastNotification.showWarning(SwingUtilities.getWindowAncestor(this), "Item not found with barcode: " + barcode);
                 barcodeField.setText("");

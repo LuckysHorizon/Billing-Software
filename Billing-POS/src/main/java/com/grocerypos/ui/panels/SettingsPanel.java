@@ -2,10 +2,10 @@ package com.grocerypos.ui.panels;
 
 import com.grocerypos.Application;
 import com.grocerypos.util.SessionManager;
+import com.grocerypos.util.ThemeManager;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionListener;
 
 /**
  * Settings panel for application configuration
@@ -16,6 +16,8 @@ public class SettingsPanel extends JPanel {
     private JLabel roleLabel;
     private JButton changePasswordButton;
     private JButton logoutButton;
+    private JButton lightThemeButton;
+    private JButton darkThemeButton;
     private JLabel appInfoLabel;
 
     public SettingsPanel(Application parent) {
@@ -41,6 +43,13 @@ public class SettingsPanel extends JPanel {
         changePasswordButton.setPreferredSize(new Dimension(150, 35));
         
         logoutButton = new JButton("Logout");
+        lightThemeButton = new JButton("Light");
+        lightThemeButton.setBackground(new Color(230, 230, 230));
+        lightThemeButton.setFocusPainted(false);
+        darkThemeButton = new JButton("Dark");
+        darkThemeButton.setBackground(new Color(30, 30, 30));
+        darkThemeButton.setForeground(Color.WHITE);
+        darkThemeButton.setFocusPainted(false);
         logoutButton.setBackground(new Color(220, 53, 69));
         logoutButton.setForeground(Color.WHITE);
         logoutButton.setFocusPainted(false);
@@ -92,6 +101,12 @@ public class SettingsPanel extends JPanel {
         appPanel.setBorder(BorderFactory.createTitledBorder("Application Information"));
         appPanel.setBackground(Color.WHITE);
         appPanel.add(appInfoLabel, BorderLayout.CENTER);
+        JPanel themeRow = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        themeRow.setBackground(Color.WHITE);
+        themeRow.add(new JLabel("Theme:"));
+        themeRow.add(lightThemeButton);
+        themeRow.add(darkThemeButton);
+        appPanel.add(themeRow, BorderLayout.SOUTH);
         
         // Add sections to main panel
         gbc.gridx = 0; gbc.gridy = 0;
@@ -106,6 +121,8 @@ public class SettingsPanel extends JPanel {
     private void setupEventHandlers() {
         changePasswordButton.addActionListener(e -> changePassword());
         logoutButton.addActionListener(e -> logout());
+        lightThemeButton.addActionListener(e -> ThemeManager.applyTheme(ThemeManager.Theme.MAC_LIGHT));
+        darkThemeButton.addActionListener(e -> ThemeManager.applyTheme(ThemeManager.Theme.MAC_DARK));
     }
 
     private void changePassword() {
