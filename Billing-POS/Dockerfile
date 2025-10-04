@@ -4,22 +4,20 @@ FROM openjdk:17-jdk-slim
 # Set working directory
 WORKDIR /app
 
-# Install Maven
+# Install Maven and curl for health checks
 RUN apt-get update && \
-    apt-get install -y maven && \
+    apt-get install -y maven curl && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Copy Maven wrapper and pom.xml first for better caching
-COPY mvnw* ./
+# Copy pom.xml first for better caching
 COPY pom.xml ./
-COPY .mvn .mvn
 
 # Copy source code
 COPY src ./src
 
 # Build the application
-RUN ./mvnw clean package -DskipTests
+RUN mvn clean package -DskipTests
 
 # Create a non-root user for security
 RUN groupadd -r posuser && useradd -r -g posuser posuser
