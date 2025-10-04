@@ -1,272 +1,299 @@
-# Grocery POS Billing System
+# 🧾 Grocery POS System (Open Source)
 
-A comprehensive Point of Sale (POS) system designed for grocery stores with modern UI, inventory management, and reporting capabilities.
+A modern, production-ready Point of Sale system built with **Java + MySQL + Docker**. This system provides a complete solution for grocery stores and retail businesses with inventory management, barcode scanning, and comprehensive reporting.
 
-## Features
+![Java](https://img.shields.io/badge/Java-17-orange)
+![MySQL](https://img.shields.io/badge/MySQL-8.0-blue)
+![Docker](https://img.shields.io/badge/Docker-Ready-2496ED)
+![License](https://img.shields.io/badge/License-MIT-green)
 
-### 🛒 Billing System
-- Barcode scanning support
-- Quick item search and add to cart
-- GST calculation
-- Multiple payment methods (Cash, Card, UPI, Online)
-- Receipt generation and printing
-- Bill management and history
+## 🚀 Features
 
-### 📦 Inventory Management
-- Add, edit, and delete products
-- Stock tracking with real-time updates
-- Low stock alerts
-- Category management
-- Barcode generation and management
-- Stock adjustment and movement tracking
+### 💼 Core POS Features
+- **Modern Billing Interface** - Clean, intuitive billing with real-time calculations
+- **Barcode Scanning** - Support for USB barcode scanners and webcam scanning
+- **Multi-Payment Support** - Cash, Card, UPI, and Online payments
+- **Receipt Printing** - Professional receipt generation with GST calculations
+- **Sound Feedback** - Audio confirmation for successful scans and transactions
+
+### 📊 Inventory Management
+- **Stock Tracking** - Real-time inventory levels with low-stock alerts
+- **Product Management** - Add, edit, and categorize products with barcodes
+- **Inventory Movements** - Track purchases, sales, adjustments, and returns
+- **Category Management** - Organize products by categories
 
 ### 👥 User Management
-- Role-based access control (Admin, Manager, Cashier)
-- Secure authentication with password hashing
-- User activity tracking
-- Session management
+- **Role-Based Access** - Admin, Manager, and Cashier roles
+- **Secure Authentication** - Password-based login with session management
+- **User Activity Tracking** - Monitor user actions and transactions
 
-### 📊 Reports & Analytics
-- Daily, weekly, and monthly sales reports
-- Top-selling items analysis
-- GST reports
-- Stock reports
-- Export to CSV/PDF
-- Low stock alerts
+### 📈 Reporting & Analytics
+- **Sales Reports** - Daily, weekly, monthly sales summaries
+- **Inventory Reports** - Stock levels, movement history, and valuation
+- **Export Functionality** - CSV export for external analysis
+- **Dashboard Analytics** - Visual charts and key performance indicators
 
-### 🎨 Modern UI
-- FlatLaf modern look and feel
-- Responsive design
-- Keyboard shortcuts
-- Dark/Light theme support
-- Intuitive navigation
+### 🎨 Modern UI/UX
+- **FlatLaf Themes** - Multiple modern themes including IntelliJ themes
+- **Responsive Design** - Clean, professional interface
+- **Keyboard Shortcuts** - Quick access to common functions
+- **Toast Notifications** - User-friendly feedback system
 
-## Technology Stack
+## 🐳 Docker Setup (Recommended)
 
-- **Backend**: Java 11, MySQL 8.0
-- **UI Framework**: Java Swing with FlatLaf
-- **Database**: MySQL with JDBC
-- **Build Tool**: Maven
-- **Additional Libraries**: 
-  - ZXing for barcode scanning
-  - iText for PDF generation
-  - Apache Commons for utilities
+### Prerequisites
+- Docker and Docker Compose installed
+- Git (for cloning the repository)
 
-## Prerequisites
+### Quick Start
 
-- Java 11 or higher
-- MySQL 8.0 or higher
-- Maven 3.6 or higher
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/LuckysHorizon/pos-open-source.git
+   cd pos-open-source
+   ```
 
-## Installation & Setup
+2. **Create environment file:**
+   ```bash
+   cp env.example .env
+   ```
 
-### 1. Database Setup
+3. **Start the application:**
+   ```bash
+   docker-compose up --build
+   ```
 
-1. Install MySQL 8.0 on your system
-2. Create a database user with appropriate privileges:
+4. **Access the application:**
+   - **POS Application:** http://localhost:8080
+   - **Database Admin (phpMyAdmin):** http://localhost:8081
+
+### Default Login Credentials
+- **Username:** `admin`
+- **Password:** `admin123`
+
+## 🛠️ Manual Setup (Development)
+
+### Prerequisites
+- Java 17 or higher
+- Maven 3.6+
+- MySQL 8.0+
+- Git
+
+### Installation Steps
+
+1. **Clone and build:**
+   ```bash
+   git clone https://github.com/LuckysHorizon/pos-open-source.git
+   cd pos-open-source
+   mvn clean package
+   ```
+
+2. **Setup MySQL database:**
    ```sql
-   CREATE USER 'grocerypos'@'localhost' IDENTIFIED BY 'your_password';
-   GRANT ALL PRIVILEGES ON grocery_pos.* TO 'grocerypos'@'localhost';
-   FLUSH PRIVILEGES;
+   CREATE DATABASE grocery_pos;
    ```
 
-3. Update database configuration in `src/main/resources/database.properties`:
-   ```properties
-   db.url=jdbc:mysql://localhost:3306/grocery_pos?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-   db.username=grocerypos
-   db.password=your_password
-   ```
+3. **Configure database connection:**
+   - Update `src/main/resources/database.properties`
+   - Set your MySQL credentials
 
-### 2. Build and Run
-
-1. Clone the repository:
-   ```bash
-   git clone <repository-url>
-   cd grocery-pos
-   ```
-
-2. Build the project:
-   ```bash
-   mvn clean compile
-   ```
-
-3. Run the application:
+4. **Run the application:**
    ```bash
    mvn exec:java -Dexec.mainClass="com.grocerypos.Main"
    ```
 
-   Or create a JAR file:
-   ```bash
-   mvn clean package
-   java -jar target/grocery-pos-1.0.0.jar
-   ```
+## 📁 Project Structure
 
-### 3. First Time Setup
+```
+pos-open-source/
+├── src/main/java/com/grocerypos/
+│   ├── Application.java              # Main application class
+│   ├── dao/                         # Data Access Objects
+│   ├── database/                    # Database utilities
+│   ├── model/                       # Entity models
+│   ├── ui/                          # User interface components
+│   └── util/                        # Utility classes
+├── src/main/resources/
+│   ├── database.properties          # Database configuration
+│   └── schema.sql                   # Database schema
+├── database/
+│   ├── schema.sql                   # Docker database schema
+│   └── seed_data.sql               # Sample data
+├── Dockerfile                       # Docker configuration
+├── docker-compose.yml              # Docker services
+├── env.example                      # Environment variables template
+└── README.md                       # This file
+```
 
-1. The application will automatically create the database schema on first run
-2. Default admin credentials:
-   - Username: `admin`
-   - Password: `admin123`
+## 🔧 Configuration
 
-**⚠️ Important**: Change the default admin password after first login!
+### Environment Variables
 
-## Usage
-
-### Login
-- Use the default admin credentials or create new users
-- Different roles have different access levels:
-  - **Admin**: Full access to all features
-  - **Manager**: Access to billing, inventory, and reports
-  - **Cashier**: Access to billing only
-
-### Creating a New Bill
-1. Click "New Bill" from the main menu or toolbar
-2. Scan barcode or search for items
-3. Add items to cart with quantities
-4. Apply discounts if needed
-5. Select payment method
-6. Generate receipt
-
-### Managing Inventory
-1. Go to Inventory Management
-2. Add new products with details:
-   - Product name and description
-   - Barcode (auto-generated or manual)
-   - Price and cost price
-   - GST percentage
-   - Stock quantity
-   - Category
-3. Edit existing products
-4. Track stock movements
-5. Set low stock alerts
-
-### Generating Reports
-1. Go to Reports section
-2. Select report type:
-   - Sales reports (daily, weekly, monthly)
-   - Stock reports
-   - GST reports
-   - Top-selling items
-3. Set date range and filters
-4. Export to CSV or PDF
-
-## Configuration
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `MYSQL_ROOT_PASSWORD` | MySQL root password | `rootpassword123` |
+| `MYSQL_DATABASE` | Database name | `grocery_pos` |
+| `MYSQL_USER` | Database user | `posuser` |
+| `MYSQL_PASSWORD` | Database password | `pospass123` |
+| `APP_PORT` | Application port | `8080` |
 
 ### Database Configuration
-Edit `src/main/resources/database.properties` to configure:
-- Database connection settings
-- Connection pool settings
-- Application settings
 
-### Receipt Configuration
-Configure receipt settings in the database `settings` table:
-- Shop name and address
-- Contact information
-- GST number
-- Receipt footer message
+The application uses environment variables for database configuration:
+- `DB_HOST` - Database host (default: localhost)
+- `DB_PORT` - Database port (default: 3306)
+- `DB_NAME` - Database name (default: grocery_pos)
+- `DB_USER` - Database username
+- `DB_PASSWORD` - Database password
 
-## Keyboard Shortcuts
+## 🚀 Deployment
 
-- `F1`: Focus barcode scanner
-- `F5`: Process payment
-- `F9`: New bill
-- `Ctrl+N`: New bill
-- `Ctrl+I`: Inventory management
-- `Ctrl+R`: Reports
-- `Ctrl+L`: Logout
-- `Alt+F4`: Exit application
+### Production Deployment
 
-## Troubleshooting
+1. **Update environment variables:**
+   ```bash
+   # Copy and edit environment file
+   cp env.example .env
+   nano .env
+   ```
 
-### Database Connection Issues
-1. Ensure MySQL is running
-2. Check database credentials in `database.properties`
-3. Verify database user has proper privileges
-4. Check firewall settings
+2. **Deploy with Docker Compose:**
+   ```bash
+   docker-compose up -d
+   ```
 
-### Application Won't Start
-1. Verify Java 11+ is installed
-2. Check MySQL connection
-3. Ensure all dependencies are resolved
-4. Check application logs
+3. **Monitor logs:**
+   ```bash
+   docker-compose logs -f app
+   ```
 
-### Performance Issues
-1. Optimize database queries
-2. Increase connection pool size
-3. Check system resources
-4. Consider database indexing
+### Cloud Deployment
 
-## Development
+The application is ready for deployment on:
+- **AWS** - Use ECS or EC2 with RDS
+- **Google Cloud** - Use Cloud Run with Cloud SQL
+- **Azure** - Use Container Instances with Azure Database
+- **DigitalOcean** - Use App Platform with Managed Database
 
-### Project Structure
-```
-src/
-├── main/
-│   ├── java/com/grocerypos/
-│   │   ├── Main.java                 # Application entry point
-│   │   ├── model/                    # Data models
-│   │   ├── dao/                      # Data Access Objects
-│   │   ├── ui/                       # User interface components
-│   │   ├── util/                     # Utility classes
-│   │   └── database/                # Database utilities
-│   └── resources/
-│       ├── schema.sql                # Database schema
-│       ├── database.properties       # Database configuration
-│       └── icons/                    # Application icons
-└── test/                            # Unit tests
-```
+## 🧪 Testing
 
-### Adding New Features
-1. Create model classes in `model/` package
-2. Create DAO classes in `dao/` package
-3. Create UI components in `ui/` package
-4. Add database migrations if needed
-5. Update documentation
-
-### Testing
+### Run Tests
 ```bash
+# Using Maven
 mvn test
+
+# Using Docker
+docker-compose exec app mvn test
 ```
 
-## Contributing
+### Test Database Connection
+```bash
+# Check database connectivity
+docker-compose exec db mysql -u posuser -p grocery_pos
+```
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Submit a pull request
+## 📊 Monitoring & Maintenance
 
-## License
+### Health Checks
+- Application health: `http://localhost:8080/health`
+- Database health: Built-in MySQL health checks
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+### Backup
+```bash
+# Create database backup
+docker-compose exec db mysqldump -u posuser -p grocery_pos > backup.sql
 
-## Support
+# Restore from backup
+docker-compose exec -T db mysql -u posuser -p grocery_pos < backup.sql
+```
 
-For support and questions:
-- Create an issue in the repository
-- Check the documentation
-- Review the troubleshooting section
+### Logs
+```bash
+# View application logs
+docker-compose logs app
 
-## Roadmap
+# View database logs
+docker-compose logs db
+```
 
-### Phase 1 - Core Features ✅
-- [x] Basic POS functionality
-- [x] Inventory management
-- [x] User authentication
-- [x] Database setup
+## 🤝 Contributing
 
-### Phase 2 - Advanced Features 🚧
-- [ ] Barcode scanning integration
-- [ ] Receipt printing
-- [ ] Advanced reporting
-- [ ] Data export/import
+We welcome contributions! Please follow these steps:
 
-### Phase 3 - Enhancements 📋
-- [ ] Multi-store support
-- [ ] Cloud synchronization
-- [ ] Mobile app integration
-- [ ] Advanced analytics
+1. **Fork the repository**
+2. **Create a feature branch:**
+   ```bash
+   git checkout -b feature/amazing-feature
+   ```
+3. **Commit your changes:**
+   ```bash
+   git commit -m 'Add amazing feature'
+   ```
+4. **Push to the branch:**
+   ```bash
+   git push origin feature/amazing-feature
+   ```
+5. **Open a Pull Request**
+
+### Development Guidelines
+- Follow Java coding standards
+- Add unit tests for new features
+- Update documentation for API changes
+- Ensure Docker compatibility
+
+## 🐛 Bug Reports & Feature Requests
+
+- **Bug Reports:** Use GitHub Issues with the "bug" label
+- **Feature Requests:** Use GitHub Issues with the "enhancement" label
+- **Security Issues:** Email security@luckyshorizon.com
+
+## 📝 Changelog
+
+### Version 1.0.0
+- Initial release
+- Complete POS functionality
+- Docker containerization
+- Modern UI with FlatLaf themes
+- Comprehensive reporting
+- Multi-user support
+
+## 🏆 Roadmap
+
+- [ ] **Web Interface** - React-based web UI
+- [ ] **Mobile App** - Android/iOS companion app
+- [ ] **API Integration** - RESTful API for third-party integrations
+- [ ] **Advanced Analytics** - Machine learning insights
+- [ ] **Multi-store Support** - Chain store management
+- [ ] **Cloud Sync** - Real-time data synchronization
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 👥 Team
+
+- **Lead Developer:** [LuckysHorizon](https://github.com/LuckysHorizon)
+- **Contributors:** [View all contributors](https://github.com/LuckysHorizon/pos-open-source/graphs/contributors)
+
+## 🙏 Acknowledgments
+
+- **FlatLaf** - Modern Java Swing look and feel
+- **ZXing** - Barcode scanning library
+- **JFreeChart** - Charting and reporting
+- **MySQL** - Database management
+- **Docker** - Containerization platform
+
+## 📞 Support
+
+- **Documentation:** [Wiki](https://github.com/LuckysHorizon/pos-open-source/wiki)
+- **Issues:** [GitHub Issues](https://github.com/LuckysHorizon/pos-open-source/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/LuckysHorizon/pos-open-source/discussions)
+- **Email:** support@luckyshorizon.com
 
 ---
 
-**Built with ❤️ for grocery store owners**
+**⭐ Star this repository if you find it helpful!**
+
+**🔗 Share with your network to help other developers!**
+
+**💡 Contribute to make it even better!**

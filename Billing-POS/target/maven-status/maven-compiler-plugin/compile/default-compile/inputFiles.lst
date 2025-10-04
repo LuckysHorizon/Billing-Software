@@ -1,4 +1,5 @@
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\model\Item.java
+D:\Projects\Billing-POS\src\main\java\com\grocerypos\ui\components\WebcamScannerDialog.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\model\Bill.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\util\BillingUITest.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\util\PasswordUtil.java
@@ -25,7 +26,6 @@ D:\Projects\Billing-POS\src\main\java\com\grocerypos\dao\UserDAO.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\ui\components\ModernButton.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\Application.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\util\ResetDatabase.java
-D:\Projects\Billing-POS\src\main\java\com\grocerypos\ui\MainWindow.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\ui\panels\ItemDialog.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\ui\ItemDialog.java
 D:\Projects\Billing-POS\src\main\java\com\grocerypos\util\SessionManager.java

@@ -111,6 +111,13 @@
             <version>3.5.1</version>
         </dependency>
 
+        <!-- Webcam capture for webcam-based scanning -->
+        <dependency>
+            <groupId>com.github.sarxos</groupId>
+            <artifactId>webcam-capture</artifactId>
+            <version>0.3.12</version>
+        </dependency>
+
         <!-- iText for PDF generation -->
         <dependency>
             <groupId>com.itextpdf</groupId>

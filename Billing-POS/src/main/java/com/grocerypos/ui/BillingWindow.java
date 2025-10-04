@@ -43,6 +43,7 @@ public class BillingWindow extends JPanel {
     private ModernButton clearCartButton;
     private ModernButton printReceiptButton;
     private ModernButton discountButton;
+    private ModernButton webcamScanButton;
     private JPopupMenu cartContextMenu;
     
     // Data
@@ -117,6 +118,7 @@ public class BillingWindow extends JPanel {
         printReceiptButton = new ModernButton("Print Receipt", new Color(23, 162, 184));
         discountButton = new ModernButton("% Discount", new Color(255, 193, 7));
         discountButton.setForeground(new Color(50, 50, 50));
+        webcamScanButton = new ModernButton("Scan (Webcam)", new Color(76, 175, 80));
         
         // Modern components
         summaryCard = new InvoiceSummaryCard();
@@ -151,6 +153,7 @@ public class BillingWindow extends JPanel {
         inputPanel.add(searchPanel);
         inputPanel.add(addItemButton);
         inputPanel.add(discountButton);
+        inputPanel.add(webcamScanButton);
         
         topCard.add(inputPanel, BorderLayout.CENTER);
         add(topCard, BorderLayout.NORTH);
@@ -236,13 +239,21 @@ public class BillingWindow extends JPanel {
             }
         });
         
-        // Search field enter key
+        // Search field autocomplete (predictive fetch on typing, Enter to add first match)
         searchField.addKeyListener(new KeyAdapter() {
+            private long lastFetch = 0L;
             @Override
-            public void keyPressed(KeyEvent e) {
+            public void keyReleased(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ENTER) {
                     searchAndAddItem();
+                    return;
                 }
+                String term = searchField.getText().trim();
+                if (term.length() < 2) return;
+                long now = System.currentTimeMillis();
+                if (now - lastFetch < 180) return; // throttle
+                lastFetch = now;
+                SwingUtilities.invokeLater(() -> showSuggestions(term));
             }
         });
         
@@ -252,6 +263,7 @@ public class BillingWindow extends JPanel {
         clearCartButton.addActionListener(e -> clearCart());
         printReceiptButton.addActionListener(e -> printReceipt());
         discountButton.addActionListener(e -> promptDiscount());
+        webcamScanButton.addActionListener(e -> openWebcamScanner());
         
         // Cart table selection
         cartTable.getSelectionModel().addListSelectionListener(e -> {
@@ -325,6 +337,30 @@ public class BillingWindow extends JPanel {
             rootPane.registerKeyboardAction(e -> clearCart(),
                 KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0),
                 JComponent.WHEN_IN_FOCUSED_WINDOW);
+
+            // Toggle webcam scanner with Ctrl+W
+            rootPane.registerKeyboardAction(e -> openWebcamScanner(),
+                KeyStroke.getKeyStroke(KeyEvent.VK_W, KeyEvent.CTRL_DOWN_MASK),
+                JComponent.WHEN_IN_FOCUSED_WINDOW);
+        }
+    }
+
+    private void openWebcamScanner() {
+        try {
+            com.grocerypos.ui.components.WebcamScannerDialog dlg = new com.grocerypos.ui.components.WebcamScannerDialog(SwingUtilities.getWindowAncestor(this));
+            dlg.setVisible(true);
+            String code = dlg.getDecodedText();
+            if (code != null && !code.trim().isEmpty()) {
+                if (dlg.isCustomerMode()) {
+                    // Future: set current customer from QR (e.g., CUST:<id>)
+                    ToastNotification.showInfo(SwingUtilities.getWindowAncestor(this), "Customer QR scanned: " + code.trim());
+                } else {
+                    barcodeField.setText(code.trim());
+                    addItemByBarcode();
+                }
+            }
+        } catch (Exception ex) {
+            ToastNotification.showError(SwingUtilities.getWindowAncestor(this), "Webcam scan failed: " + ex.getMessage());
         }
     }
 
@@ -377,7 +413,17 @@ public class BillingWindow extends JPanel {
         }
         
         try {
-            List<Item> items = itemDAO.searchByName(searchTerm);
+            List<Item> items;
+            if (searchTerm.toLowerCase().startsWith("cat:")) {
+                String category = searchTerm.substring(4).trim();
+                if (category.isEmpty()) {
+                    ToastNotification.showInfo(SwingUtilities.getWindowAncestor(this), "Use cat:CategoryName to filter");
+                    return;
+                }
+                items = itemDAO.findByCategory(category);
+            } else {
+                items = itemDAO.searchByName(searchTerm);
+            }
             if (items.isEmpty()) {
                 ToastNotification.showInfo(SwingUtilities.getWindowAncestor(this), "No items found matching: " + searchTerm);
             } else if (items.size() == 1) {
@@ -390,6 +436,28 @@ public class BillingWindow extends JPanel {
             }
         } catch (SQLException e) {
             ToastNotification.showError(SwingUtilities.getWindowAncestor(this), "Database error: " + e.getMessage());
+        }
+    }
+
+    private void showSuggestions(String term) {
+        try {
+            List<Item> items = itemDAO.findByNamePattern(term);
+            if (items.isEmpty()) return;
+            JPopupMenu popup = new JPopupMenu();
+            int max = Math.min(8, items.size());
+            for (int i = 0; i < max; i++) {
+                Item it = items.get(i);
+                JMenuItem mi = new JMenuItem(it.getName() + "  •  ₹" + it.getPrice());
+                mi.addActionListener(e -> {
+                    addItemToCart(it, 1);
+                    searchField.setText("");
+                    ToastNotification.showSuccess(SwingUtilities.getWindowAncestor(this), "Item added: " + it.getName());
+                });
+                popup.add(mi);
+            }
+            popup.show(searchField, 0, searchField.getHeight());
+        } catch (SQLException ex) {
+            ToastNotification.showError(SwingUtilities.getWindowAncestor(this), "Database error: " + ex.getMessage());
         }
     }
 

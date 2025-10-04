@@ -12,6 +12,7 @@ com\grocerypos\model\User$Role.class
 com\grocerypos\ui\components\MacTopBar.class
 com\grocerypos\util\ThemeManager.class
 com\grocerypos\ui\panels\CashierPanel$10.class
+com\grocerypos\ui\components\WebcamScannerDialog.class
 com\grocerypos\ui\BillingWindow$5.class
 com\grocerypos\model\Bill.class
 com\grocerypos\ui\panels\CashierPanel$2.class
@@ -65,8 +66,6 @@ com\grocerypos\util\BillingUITest.class
 com\grocerypos\ui\InventoryWindow$2.class
 com\grocerypos\ui\panels\CashierPanel$9.class
 com\grocerypos\database\DBUtil.class
-com\grocerypos\ui\MainWindow$1.class
-com\grocerypos\ui\MainWindow.class
 com\grocerypos\ui\JDatePicker.class
 com\grocerypos\ui\components\ModernSearchField$2.class
 com\grocerypos\ui\panels\ItemDialog.class
